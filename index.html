@@ -3,1557 +3,829 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Zynapse — AI Knowledge Store</title>
+<title>Gen1Ai — AI Knowledge Empire</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  /* ── RESET & VARIABLES ─────────────────────────────────── */
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --ink:     #0a0a0f;
-    --cream:   #f5f0e8;
-    --gold:    #c9a84c;
-    --gold2:   #e8c97a;
-    --ember:   #e05c2d;
-    --mist:    #8a8fa8;
-    --glass:   rgba(245,240,232,0.06);
-    --border:  rgba(201,168,76,0.18);
-    --ff-head: 'Playfair Display', Georgia, serif;
-    --ff-body: 'DM Sans', sans-serif;
-    --ease:    cubic-bezier(.16,1,.3,1);
-  }
-
-  html { scroll-behavior: smooth; }
-
-  body {
-    background: var(--ink);
-    color: var(--cream);
-    font-family: var(--ff-body);
-    overflow-x: hidden;
-    cursor: none;
-  }
-
-  /* ── CUSTOM CURSOR ─────────────────────────────────────── */
-  #cursor-dot, #cursor-ring {
-    position: fixed;
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 9999;
-    transition: transform .1s var(--ease);
-  }
-  #cursor-dot  { width:8px; height:8px; background:var(--gold); transform:translate(-50%,-50%); }
-  #cursor-ring { width:36px; height:36px; border:1.5px solid var(--gold); transform:translate(-50%,-50%); transition:width .25s,height .25s,border-color .25s; }
-  body:has(a:hover) #cursor-ring,
-  body:has(button:hover) #cursor-ring { width:56px; height:56px; border-color:var(--ember); }
-
-  /* ── NOISE GRAIN OVERLAY ───────────────────────────────── */
-  body::before {
-    content:'';
-    position:fixed; inset:0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-    opacity:.025;
-    pointer-events:none;
-    z-index:8888;
-  }
-
-  /* ── NAV ───────────────────────────────────────────────── */
-  nav {
-    position:fixed; top:0; left:0; right:0; z-index:1000;
-    display:flex; align-items:center; justify-content:space-between;
-    padding:1.2rem 4vw;
-    background:rgba(10,10,15,.7);
-    backdrop-filter:blur(20px);
-    border-bottom:1px solid var(--border);
-    animation:fadeDown .8s var(--ease) both;
-  }
-  @keyframes fadeDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:none} }
-
-  .logo {
-    font-family:var(--ff-head);
-    font-size:1.5rem;
-    font-weight:900;
-    letter-spacing:-.02em;
-    background:linear-gradient(135deg,var(--gold),var(--gold2));
-    -webkit-background-clip:text;
-    -webkit-text-fill-color:transparent;
-  }
-  .logo span { color:var(--ember); -webkit-text-fill-color:var(--ember); }
-
-  .nav-links { display:flex; gap:2.2rem; align-items:center; }
-  .nav-links a {
-    color:var(--mist);
-    text-decoration:none;
-    font-size:.88rem;
-    font-weight:500;
-    letter-spacing:.06em;
-    text-transform:uppercase;
-    transition:color .2s;
-    position:relative;
-  }
-  .nav-links a::after {
-    content:'';
-    position:absolute; bottom:-4px; left:0; width:0; height:1px;
-    background:var(--gold);
-    transition:width .3s var(--ease);
-  }
-  .nav-links a:hover { color:var(--cream); }
-  .nav-links a:hover::after { width:100%; }
-
-  .btn-nav {
-    background:var(--gold);
-    color:var(--ink)!important;
-    padding:.5rem 1.4rem;
-    border-radius:4px;
-    font-weight:600!important;
-    letter-spacing:.04em;
-    transition:background .2s, transform .2s!important;
-  }
-  .btn-nav::after { display:none!important; }
-  .btn-nav:hover { background:var(--gold2)!important; transform:translateY(-1px)!important; }
-
-  .nav-cart {
-    position:relative;
-    cursor:pointer;
-    padding:.4rem;
-  }
-  .cart-badge {
-    position:absolute; top:-4px; right:-4px;
-    background:var(--ember);
-    color:#fff;
-    font-size:.6rem;
-    width:16px; height:16px;
-    border-radius:50%;
-    display:flex; align-items:center; justify-content:center;
-    font-weight:700;
-  }
-
-  /* ── HERO ──────────────────────────────────────────────── */
-  #hero {
-    min-height:100vh;
-    display:grid;
-    place-items:center;
-    text-align:center;
-    padding:8rem 4vw 4rem;
-    position:relative;
-    overflow:hidden;
-  }
-
-  .hero-bg {
-    position:absolute; inset:0;
-    background:radial-gradient(ellipse 80% 60% at 50% 40%, rgba(201,168,76,.12) 0%, transparent 70%),
-               radial-gradient(ellipse 40% 40% at 80% 20%, rgba(224,92,45,.08) 0%, transparent 60%);
-  }
-
-  .hero-grid {
-    position:absolute; inset:0;
-    background-image:
-      linear-gradient(rgba(201,168,76,.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(201,168,76,.04) 1px, transparent 1px);
-    background-size:60px 60px;
-  }
-
-  .hero-content { position:relative; z-index:2; max-width:900px; }
-
-  .hero-badge {
-    display:inline-flex; align-items:center; gap:.5rem;
-    border:1px solid var(--border);
-    background:var(--glass);
-    backdrop-filter:blur(8px);
-    padding:.4rem 1.1rem;
-    border-radius:100px;
-    font-size:.78rem;
-    letter-spacing:.1em;
-    text-transform:uppercase;
-    color:var(--gold);
-    margin-bottom:2rem;
-    animation:fadeUp .8s .2s var(--ease) both;
-  }
-  .badge-dot { width:6px; height:6px; background:var(--ember); border-radius:50%; animation:pulse 2s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
-
-  .hero-title {
-    font-family:var(--ff-head);
-    font-size:clamp(3rem,8vw,7rem);
-    font-weight:900;
-    line-height:.95;
-    letter-spacing:-.03em;
-    animation:fadeUp .8s .35s var(--ease) both;
-  }
-  .hero-title .accent { color:var(--gold); }
-  .hero-title .ember  { color:var(--ember); }
-
-  @keyframes fadeUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:none} }
-
-  .hero-sub {
-    font-size:clamp(1rem,2vw,1.25rem);
-    color:var(--mist);
-    max-width:600px;
-    margin:1.6rem auto 2.8rem;
-    line-height:1.7;
-    font-weight:300;
-    animation:fadeUp .8s .5s var(--ease) both;
-  }
-
-  .hero-ctas {
-    display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;
-    animation:fadeUp .8s .65s var(--ease) both;
-  }
-
-  .btn-primary {
-    background:linear-gradient(135deg,var(--gold),var(--gold2));
-    color:var(--ink);
-    border:none;
-    padding:.85rem 2.2rem;
-    border-radius:6px;
-    font-family:var(--ff-body);
-    font-weight:700;
-    font-size:.95rem;
-    letter-spacing:.04em;
-    cursor:pointer;
-    transition:transform .2s var(--ease), box-shadow .2s;
-    box-shadow:0 4px 24px rgba(201,168,76,.25);
-    text-decoration:none;
-  }
-  .btn-primary:hover { transform:translateY(-3px); box-shadow:0 10px 32px rgba(201,168,76,.35); }
-
-  .btn-ghost {
-    background:transparent;
-    color:var(--cream);
-    border:1px solid var(--border);
-    padding:.85rem 2.2rem;
-    border-radius:6px;
-    font-family:var(--ff-body);
-    font-weight:500;
-    font-size:.95rem;
-    cursor:pointer;
-    transition:all .2s;
-    text-decoration:none;
-  }
-  .btn-ghost:hover { border-color:var(--gold); color:var(--gold); }
-
-  .hero-stats {
-    display:flex; gap:3rem; justify-content:center;
-    margin-top:4rem;
-    animation:fadeUp .8s .8s var(--ease) both;
-    flex-wrap:wrap;
-  }
-  .stat { text-align:center; }
-  .stat-num {
-    font-family:var(--ff-head);
-    font-size:2.5rem;
-    font-weight:900;
-    color:var(--gold);
-    display:block;
-  }
-  .stat-lbl { font-size:.78rem; color:var(--mist); letter-spacing:.08em; text-transform:uppercase; margin-top:.2rem; }
-
-  /* ── MARQUEE ───────────────────────────────────────────── */
-  .marquee-wrap {
-    overflow:hidden;
-    border-top:1px solid var(--border);
-    border-bottom:1px solid var(--border);
-    padding:.75rem 0;
-    background:var(--glass);
-    backdrop-filter:blur(4px);
-  }
-  .marquee-track {
-    display:flex; gap:4rem;
-    animation:marquee 25s linear infinite;
-    white-space:nowrap;
-    width:max-content;
-  }
-  @keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
-  .marquee-item {
-    font-size:.75rem;
-    letter-spacing:.12em;
-    text-transform:uppercase;
-    color:var(--gold);
-    font-weight:500;
-  }
-  .marquee-sep { color:var(--ember); opacity:.5; }
-
-  /* ── SECTION COMMON ────────────────────────────────────── */
-  section { padding:6rem 4vw; }
-  .section-tag {
-    font-size:.72rem;
-    letter-spacing:.16em;
-    text-transform:uppercase;
-    color:var(--ember);
-    font-weight:600;
-    margin-bottom:1rem;
-    display:block;
-  }
-  .section-title {
-    font-family:var(--ff-head);
-    font-size:clamp(2rem,4vw,3.2rem);
-    font-weight:900;
-    line-height:1.1;
-    letter-spacing:-.02em;
-    margin-bottom:1rem;
-  }
-  .section-sub {
-    color:var(--mist);
-    font-size:1rem;
-    max-width:560px;
-    line-height:1.7;
-    font-weight:300;
-  }
-
-  /* ── PRODUCTS ──────────────────────────────────────────── */
-  #products { background:rgba(245,240,232,.02); }
-
-  .products-header {
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-end;
-    margin-bottom:3rem;
-    flex-wrap:wrap;
-    gap:1rem;
-  }
-
-  .filter-tabs {
-    display:flex; gap:.5rem; flex-wrap:wrap;
-  }
-  .filter-tab {
-    background:transparent;
-    border:1px solid var(--border);
-    color:var(--mist);
-    padding:.4rem 1rem;
-    border-radius:100px;
-    font-family:var(--ff-body);
-    font-size:.8rem;
-    cursor:pointer;
-    transition:all .2s;
-    letter-spacing:.04em;
-  }
-  .filter-tab.active, .filter-tab:hover {
-    background:var(--gold);
-    color:var(--ink);
-    border-color:var(--gold);
-    font-weight:600;
-  }
-
-  .products-grid {
-    display:grid;
-    grid-template-columns:repeat(auto-fill, minmax(280px,1fr));
-    gap:1.5rem;
-  }
-
-  .product-card {
-    background:var(--glass);
-    border:1px solid var(--border);
-    border-radius:12px;
-    overflow:hidden;
-    transition:transform .35s var(--ease), box-shadow .35s;
-    cursor:pointer;
-    position:relative;
-  }
-  .product-card:hover {
-    transform:translateY(-8px);
-    box-shadow:0 24px 48px rgba(0,0,0,.4), 0 0 0 1px rgba(201,168,76,.25);
-  }
-
-  .product-cover {
-    height:200px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    position:relative;
-    overflow:hidden;
-  }
-  .cover-icon {
-    font-size:4rem;
-    position:relative;
-    z-index:2;
-    filter:drop-shadow(0 4px 16px rgba(0,0,0,.4));
-    transition:transform .3s var(--ease);
-  }
-  .product-card:hover .cover-icon { transform:scale(1.15) rotate(-3deg); }
-
-  .cover-bg-1 { background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460); }
-  .cover-bg-2 { background:linear-gradient(135deg,#2d1b00,#4a2c00,#6b3f00); }
-  .cover-bg-3 { background:linear-gradient(135deg,#1a0a2e,#2d1b4e,#4a2c6e); }
-  .cover-bg-4 { background:linear-gradient(135deg,#0a1f0a,#1a3a1a,#2d5a2d); }
-  .cover-bg-5 { background:linear-gradient(135deg,#2e0a0a,#4e1a1a,#6e2d2d); }
-  .cover-bg-6 { background:linear-gradient(135deg,#0a1a2e,#1a2e4e,#2d4a6e); }
-
-  .cover-shine {
-    position:absolute;
-    top:-50%; left:-50%;
-    width:200%; height:200%;
-    background:radial-gradient(circle, rgba(255,255,255,.08) 0%, transparent 60%);
-    opacity:0;
-    transition:opacity .3s;
-  }
-  .product-card:hover .cover-shine { opacity:1; }
-
-  .product-badge {
-    position:absolute; top:12px; right:12px;
-    font-size:.65rem;
-    font-weight:700;
-    letter-spacing:.08em;
-    text-transform:uppercase;
-    padding:.25rem .6rem;
-    border-radius:4px;
-  }
-  .badge-new { background:var(--ember); color:#fff; }
-  .badge-best { background:var(--gold); color:var(--ink); }
-  .badge-sale { background:#7c3aed; color:#fff; }
-
-  .product-body { padding:1.4rem; }
-  .product-cat {
-    font-size:.7rem;
-    letter-spacing:.1em;
-    text-transform:uppercase;
-    color:var(--ember);
-    font-weight:600;
-    margin-bottom:.5rem;
-  }
-  .product-title {
-    font-family:var(--ff-head);
-    font-size:1.15rem;
-    font-weight:700;
-    line-height:1.3;
-    margin-bottom:.5rem;
-  }
-  .product-desc {
-    font-size:.82rem;
-    color:var(--mist);
-    line-height:1.6;
-    margin-bottom:1.2rem;
-  }
-  .product-meta {
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:1rem;
-  }
-  .product-price {
-    font-family:var(--ff-head);
-    font-size:1.5rem;
-    font-weight:900;
-    color:var(--gold);
-  }
-  .product-price .old-price {
-    font-size:.85rem;
-    color:var(--mist);
-    text-decoration:line-through;
-    font-family:var(--ff-body);
-    margin-left:.3rem;
-  }
-
-  .btn-buy {
-    background:var(--ink);
-    color:var(--gold);
-    border:1px solid var(--gold);
-    padding:.5rem 1.1rem;
-    border-radius:6px;
-    font-size:.8rem;
-    font-weight:600;
-    letter-spacing:.04em;
-    cursor:pointer;
-    transition:all .2s;
-    font-family:var(--ff-body);
-    white-space:nowrap;
-  }
-  .btn-buy:hover {
-    background:var(--gold);
-    color:var(--ink);
-  }
-
-  .product-stars {
-    display:flex; gap:2px;
-    margin-bottom:.4rem;
-    font-size:.8rem;
-  }
-  .star { color:var(--gold); }
-  .star-empty { color:var(--border); }
-  .review-count { color:var(--mist); font-size:.72rem; margin-left:.3rem; }
-
-  /* ── FEATURES ──────────────────────────────────────────── */
-  #features {
-    background:linear-gradient(180deg, transparent, rgba(201,168,76,.04), transparent);
-  }
-
-  .features-layout {
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:4rem;
-    align-items:center;
-    margin-top:3rem;
-  }
-
-  .feature-visual {
-    position:relative;
-    height:480px;
-  }
-
-  .fv-card {
-    position:absolute;
-    background:var(--glass);
-    border:1px solid var(--border);
-    border-radius:12px;
-    padding:1.5rem;
-    backdrop-filter:blur(16px);
-  }
-  .fv-main {
-    width:80%;
-    top:10%;
-    left:5%;
-    background:linear-gradient(135deg, rgba(201,168,76,.08), rgba(224,92,45,.04));
-    border-color:rgba(201,168,76,.3);
-    animation:float1 6s ease-in-out infinite;
-  }
-  .fv-stat1 {
-    width:55%;
-    bottom:15%;
-    right:0;
-    animation:float2 7s ease-in-out infinite .5s;
-  }
-  .fv-stat2 {
-    width:45%;
-    bottom:5%;
-    left:0;
-    animation:float2 5.5s ease-in-out infinite 1s;
-  }
-  @keyframes float1 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
-  @keyframes float2 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-
-  .fv-label { font-size:.68rem; color:var(--mist); text-transform:uppercase; letter-spacing:.1em; margin-bottom:.5rem; }
-  .fv-big { font-family:var(--ff-head); font-size:2rem; font-weight:900; color:var(--gold); }
-  .fv-sub { font-size:.8rem; color:var(--mist); margin-top:.2rem; }
-  .fv-bar { height:4px; background:rgba(201,168,76,.1); border-radius:2px; margin:.8rem 0 .3rem; overflow:hidden; }
-  .fv-fill { height:100%; background:linear-gradient(90deg,var(--gold),var(--ember)); border-radius:2px; }
-  .fv-row { display:flex; justify-content:space-between; font-size:.75rem; color:var(--mist); }
-
-  .feature-list { list-style:none; }
-  .feature-item {
-    display:flex; gap:1rem; align-items:flex-start;
-    padding:1.4rem 0;
-    border-bottom:1px solid var(--border);
-    opacity:0;
-    transform:translateX(20px);
-    transition:all .5s var(--ease);
-  }
-  .feature-item.visible { opacity:1; transform:none; }
-  .fi-icon {
-    width:40px; height:40px;
-    border:1px solid var(--border);
-    border-radius:8px;
-    display:flex; align-items:center; justify-content:center;
-    font-size:1.1rem;
-    flex-shrink:0;
-    background:var(--glass);
-  }
-  .fi-title { font-weight:600; margin-bottom:.3rem; font-size:.95rem; }
-  .fi-desc { font-size:.82rem; color:var(--mist); line-height:1.6; }
-
-  /* ── TESTIMONIALS ──────────────────────────────────────── */
-  #testimonials { background:rgba(0,0,0,.2); }
-
-  .testimonials-grid {
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
-    gap:1.5rem;
-    margin-top:3rem;
-  }
-
-  .testi-card {
-    background:var(--glass);
-    border:1px solid var(--border);
-    border-radius:12px;
-    padding:2rem;
-    transition:transform .3s var(--ease);
-    opacity:0;
-    transform:translateY(20px);
-    transition:opacity .5s, transform .5s var(--ease);
-  }
-  .testi-card.visible { opacity:1; transform:none; }
-  .testi-card:hover { transform:translateY(-4px); }
-
-  .testi-stars { display:flex; gap:3px; color:var(--gold); font-size:.9rem; margin-bottom:1.2rem; }
-  .testi-text { font-size:.9rem; line-height:1.75; color:var(--cream); margin-bottom:1.5rem; font-style:italic; }
-  .testi-text::before { content:'\201C'; font-size:2rem; color:var(--gold); line-height:0; vertical-align:-0.5em; margin-right:.2rem; }
-  .testi-author { display:flex; align-items:center; gap:.8rem; }
-  .testi-avatar {
-    width:40px; height:40px;
-    border-radius:50%;
-    display:flex; align-items:center; justify-content:center;
-    font-size:1.1rem;
-    border:2px solid var(--border);
-  }
-  .testi-name { font-weight:600; font-size:.88rem; }
-  .testi-role { font-size:.75rem; color:var(--mist); }
-
-  /* ── PRICING ───────────────────────────────────────────── */
-  #pricing {
-    text-align:center;
-    background:linear-gradient(180deg,transparent,rgba(201,168,76,.03),transparent);
-  }
-  #pricing .section-sub { margin:0 auto; }
-
-  .pricing-grid {
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-    gap:1.5rem;
-    margin-top:3rem;
-    max-width:900px;
-    margin-left:auto;
-    margin-right:auto;
-  }
-
-  .price-card {
-    background:var(--glass);
-    border:1px solid var(--border);
-    border-radius:14px;
-    padding:2.4rem 2rem;
-    transition:transform .3s var(--ease);
-    position:relative;
-  }
-  .price-card:hover { transform:translateY(-6px); }
-  .price-card.featured {
-    border-color:var(--gold);
-    background:linear-gradient(135deg,rgba(201,168,76,.08),rgba(224,92,45,.04));
-  }
-  .price-featured-badge {
-    position:absolute; top:-14px; left:50%; transform:translateX(-50%);
-    background:var(--gold);
-    color:var(--ink);
-    font-size:.68rem;
-    font-weight:700;
-    letter-spacing:.1em;
-    text-transform:uppercase;
-    padding:.3rem .9rem;
-    border-radius:100px;
-    white-space:nowrap;
-  }
-  .price-plan { font-size:.78rem; text-transform:uppercase; letter-spacing:.14em; color:var(--mist); margin-bottom:1rem; font-weight:500; }
-  .price-amount { font-family:var(--ff-head); font-size:3.2rem; font-weight:900; color:var(--cream); }
-  .price-amount sup { font-size:1.4rem; vertical-align:top; margin-top:.8rem; display:inline-block; color:var(--gold); }
-  .price-period { font-size:.8rem; color:var(--mist); margin-bottom:2rem; }
-  .price-features { list-style:none; text-align:left; margin-bottom:2rem; }
-  .price-features li {
-    font-size:.85rem;
-    padding:.55rem 0;
-    border-bottom:1px solid rgba(201,168,76,.07);
-    display:flex;
-    gap:.7rem;
-    align-items:center;
-    color:var(--mist);
-  }
-  .price-features li .check { color:var(--gold); font-weight:700; }
-  .price-features li.inactive { opacity:.4; }
-
-  .btn-plan {
-    width:100%;
-    padding:.85rem;
-    border-radius:8px;
-    font-family:var(--ff-body);
-    font-weight:700;
-    font-size:.9rem;
-    cursor:pointer;
-    transition:all .2s var(--ease);
-    border:none;
-    letter-spacing:.04em;
-  }
-  .btn-plan-outline { background:transparent; border:1px solid var(--border); color:var(--cream); }
-  .btn-plan-outline:hover { border-color:var(--gold); color:var(--gold); }
-  .btn-plan-gold { background:linear-gradient(135deg,var(--gold),var(--gold2)); color:var(--ink); }
-  .btn-plan-gold:hover { box-shadow:0 8px 24px rgba(201,168,76,.3); transform:translateY(-2px); }
-
-  /* ── CART DRAWER ───────────────────────────────────────── */
-  #cart-overlay {
-    position:fixed; inset:0; z-index:2000;
-    background:rgba(10,10,15,.7);
-    backdrop-filter:blur(4px);
-    opacity:0;
-    pointer-events:none;
-    transition:opacity .3s;
-  }
-  #cart-overlay.open { opacity:1; pointer-events:all; }
-
-  #cart-drawer {
-    position:fixed; right:0; top:0; bottom:0;
-    width:min(420px,100vw);
-    background:linear-gradient(160deg, #111118, #0a0a0f);
-    border-left:1px solid var(--border);
-    z-index:2001;
-    transform:translateX(100%);
-    transition:transform .4s var(--ease);
-    display:flex; flex-direction:column;
-    overflow:hidden;
-  }
-  #cart-drawer.open { transform:translateX(0); }
-
-  .cart-header {
-    padding:1.8rem;
-    border-bottom:1px solid var(--border);
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-  }
-  .cart-title {
-    font-family:var(--ff-head);
-    font-size:1.4rem;
-    font-weight:700;
-  }
-  .cart-close {
-    background:none; border:none;
-    color:var(--mist); font-size:1.4rem;
-    cursor:pointer; padding:.3rem;
-    transition:color .2s;
-  }
-  .cart-close:hover { color:var(--cream); }
-
-  .cart-items { flex:1; overflow-y:auto; padding:1.4rem; }
-  .cart-empty {
-    text-align:center;
-    color:var(--mist);
-    padding:3rem 0;
-  }
-  .cart-empty-icon { font-size:3rem; margin-bottom:1rem; opacity:.4; }
-
-  .cart-item {
-    display:flex; gap:1rem;
-    padding:1rem 0;
-    border-bottom:1px solid var(--border);
-    align-items:center;
-  }
-  .ci-icon {
-    width:48px; height:48px;
-    border-radius:8px;
-    display:flex; align-items:center; justify-content:center;
-    font-size:1.5rem;
-    flex-shrink:0;
-  }
-  .ci-name { font-weight:600; font-size:.9rem; margin-bottom:.2rem; }
-  .ci-price { color:var(--gold); font-weight:700; font-size:.95rem; }
-  .ci-remove {
-    margin-left:auto;
-    background:none; border:none;
-    color:var(--mist); cursor:pointer;
-    font-size:1.1rem;
-    transition:color .2s;
-    flex-shrink:0;
-  }
-  .ci-remove:hover { color:var(--ember); }
-
-  .cart-footer {
-    padding:1.6rem;
-    border-top:1px solid var(--border);
-  }
-  .cart-total {
-    display:flex; justify-content:space-between;
-    font-family:var(--ff-head);
-    font-size:1.3rem;
-    font-weight:700;
-    margin-bottom:1rem;
-  }
-  .total-price { color:var(--gold); }
-
-  .btn-checkout {
-    width:100%;
-    padding:1rem;
-    background:linear-gradient(135deg,var(--gold),var(--gold2));
-    color:var(--ink);
-    border:none;
-    border-radius:8px;
-    font-family:var(--ff-body);
-    font-weight:700;
-    font-size:1rem;
-    cursor:pointer;
-    transition:all .2s;
-    display:flex; align-items:center; justify-content:center; gap:.6rem;
-  }
-  .btn-checkout:hover { box-shadow:0 8px 24px rgba(201,168,76,.35); transform:translateY(-2px); }
-
-  /* ── PAYMENT MODAL ─────────────────────────────────────── */
-  #payment-modal {
-    position:fixed; inset:0;
-    z-index:3000;
-    background:rgba(10,10,15,.85);
-    backdrop-filter:blur(8px);
-    display:flex; align-items:center; justify-content:center;
-    padding:1rem;
-    opacity:0; pointer-events:none;
-    transition:opacity .3s;
-  }
-  #payment-modal.open { opacity:1; pointer-events:all; }
-
-  .modal-box {
-    background:#111118;
-    border:1px solid var(--border);
-    border-radius:16px;
-    padding:2.5rem;
-    width:min(480px,100%);
-    transform:scale(.94);
-    transition:transform .3s var(--ease);
-    max-height:90vh;
-    overflow-y:auto;
-  }
-  #payment-modal.open .modal-box { transform:scale(1); }
-
-  .modal-title {
-    font-family:var(--ff-head);
-    font-size:1.6rem;
-    font-weight:700;
-    margin-bottom:.5rem;
-  }
-  .modal-sub { font-size:.85rem; color:var(--mist); margin-bottom:2rem; }
-
-  .secure-badge {
-    display:flex; align-items:center; gap:.5rem;
-    font-size:.75rem; color:var(--mist);
-    background:rgba(201,168,76,.06);
-    border:1px solid var(--border);
-    border-radius:6px;
-    padding:.6rem 1rem;
-    margin-bottom:1.5rem;
-  }
-  .secure-badge .lock { color:var(--gold); }
-
-  .payment-methods {
-    display:grid; grid-template-columns:1fr 1fr;
-    gap:.8rem;
-    margin-bottom:1.5rem;
-  }
-  .pay-method {
-    border:1.5px solid var(--border);
-    border-radius:8px;
-    padding:.8rem;
-    display:flex; align-items:center; gap:.6rem;
-    font-size:.85rem;
-    cursor:pointer;
-    transition:all .2s;
-    background:transparent;
-    color:var(--cream);
-    font-family:var(--ff-body);
-  }
-  .pay-method:hover, .pay-method.active { border-color:var(--gold); background:rgba(201,168,76,.06); }
-
-  .form-group { margin-bottom:1rem; }
-  .form-label {
-    display:block;
-    font-size:.78rem;
-    font-weight:600;
-    letter-spacing:.06em;
-    text-transform:uppercase;
-    color:var(--mist);
-    margin-bottom:.4rem;
-  }
-  .form-input {
-    width:100%;
-    background:rgba(255,255,255,.04);
-    border:1px solid var(--border);
-    border-radius:8px;
-    padding:.75rem 1rem;
-    color:var(--cream);
-    font-family:var(--ff-body);
-    font-size:.92rem;
-    transition:border-color .2s;
-    outline:none;
-  }
-  .form-input:focus { border-color:var(--gold); }
-  .form-input::placeholder { color:rgba(138,143,168,.5); }
-
-  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
-
-  .btn-pay {
-    width:100%;
-    padding:1rem;
-    background:linear-gradient(135deg,var(--gold),var(--gold2));
-    color:var(--ink);
-    border:none;
-    border-radius:8px;
-    font-family:var(--ff-body);
-    font-weight:700;
-    font-size:1rem;
-    cursor:pointer;
-    margin-top:.8rem;
-    transition:all .2s;
-    display:flex; align-items:center; justify-content:center; gap:.5rem;
-  }
-  .btn-pay:hover { box-shadow:0 8px 24px rgba(201,168,76,.35); transform:translateY(-2px); }
-
-  .modal-close-btn {
-    position:absolute; top:1rem; right:1rem;
-    background:none; border:none;
-    color:var(--mist); font-size:1.4rem;
-    cursor:pointer;
-    transition:color .2s;
-  }
-  .modal-close-btn:hover { color:var(--cream); }
-  #payment-modal .modal-box { position:relative; }
-
-  /* ── SUCCESS TOAST ─────────────────────────────────────── */
-  #toast {
-    position:fixed; bottom:2rem; right:2rem;
-    background:linear-gradient(135deg,#1a2a1a,#1f3a1f);
-    border:1px solid rgba(52,211,153,.3);
-    border-radius:12px;
-    padding:1rem 1.5rem;
-    display:flex; gap:.8rem; align-items:center;
-    z-index:5000;
-    transform:translateY(100px);
-    opacity:0;
-    transition:all .4s var(--ease);
-    max-width:320px;
-  }
-  #toast.show { transform:none; opacity:1; }
-  .toast-icon { font-size:1.4rem; }
-  .toast-msg { font-size:.88rem; line-height:1.4; }
-  .toast-msg strong { color:#4ade80; display:block; }
-
-  /* ── FAQ ───────────────────────────────────────────────── */
-  #faq { background:rgba(0,0,0,.15); }
-  .faq-grid {
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:1rem;
-    margin-top:3rem;
-  }
-  .faq-item {
-    background:var(--glass);
-    border:1px solid var(--border);
-    border-radius:10px;
-    overflow:hidden;
-  }
-  .faq-q {
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:1.2rem 1.4rem;
-    cursor:pointer;
-    font-weight:600;
-    font-size:.9rem;
-    gap:1rem;
-  }
-  .faq-arrow { color:var(--gold); transition:transform .3s; font-size:1rem; flex-shrink:0; }
-  .faq-item.open .faq-arrow { transform:rotate(180deg); }
-  .faq-a {
-    height:0;
-    overflow:hidden;
-    transition:height .3s var(--ease);
-    font-size:.85rem;
-    color:var(--mist);
-    line-height:1.7;
-  }
-  .faq-a-inner { padding:0 1.4rem 1.2rem; }
-
-  /* ── CTA BANNER ────────────────────────────────────────── */
-  #cta {
-    text-align:center;
-    padding:8rem 4vw;
-    background:radial-gradient(ellipse 70% 60% at 50% 50%, rgba(201,168,76,.1) 0%, transparent 70%);
-    border-top:1px solid var(--border);
-    border-bottom:1px solid var(--border);
-  }
-  #cta .section-title { font-size:clamp(2.2rem,5vw,4rem); margin-bottom:1.2rem; }
-
-  /* ── FOOTER ────────────────────────────────────────────── */
-  footer {
-    padding:4rem 4vw 2rem;
-    border-top:1px solid var(--border);
-  }
-  .footer-grid {
-    display:grid;
-    grid-template-columns:1.8fr 1fr 1fr 1fr;
-    gap:3rem;
-    margin-bottom:3rem;
-  }
-  .footer-brand .logo { font-size:1.8rem; margin-bottom:1rem; display:block; }
-  .footer-desc { font-size:.85rem; color:var(--mist); line-height:1.7; max-width:280px; }
-  .footer-col-title {
-    font-size:.75rem;
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:.12em;
-    color:var(--mist);
-    margin-bottom:1.2rem;
-  }
-  .footer-links { list-style:none; }
-  .footer-links li { margin-bottom:.7rem; }
-  .footer-links a {
-    color:rgba(245,240,232,.5);
-    text-decoration:none;
-    font-size:.85rem;
-    transition:color .2s;
-  }
-  .footer-links a:hover { color:var(--gold); }
-
-  .footer-bottom {
-    border-top:1px solid var(--border);
-    padding-top:1.5rem;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    flex-wrap:wrap;
-    gap:1rem;
-  }
-  .footer-copy { font-size:.78rem; color:rgba(138,143,168,.5); }
-  .footer-badges { display:flex; gap:.8rem; flex-wrap:wrap; }
-  .footer-badge {
-    font-size:.7rem;
-    padding:.3rem .7rem;
-    border:1px solid var(--border);
-    border-radius:4px;
-    color:var(--mist);
-    display:flex; align-items:center; gap:.3rem;
-  }
-
-  /* ── RESPONSIVE ────────────────────────────────────────── */
-  @media(max-width:768px) {
-    .nav-links { display:none; }
-    .features-layout { grid-template-columns:1fr; }
-    .feature-visual { height:300px; display:none; }
-    .faq-grid { grid-template-columns:1fr; }
-    .footer-grid { grid-template-columns:1fr 1fr; }
-    .form-row { grid-template-columns:1fr; }
-    .payment-methods { grid-template-columns:1fr; }
-  }
-
-  /* ── SCROLL ANIMATIONS ─────────────────────────────────── */
-  .reveal {
-    opacity:0;
-    transform:translateY(24px);
-    transition:opacity .6s var(--ease), transform .6s var(--ease);
-  }
-  .reveal.visible { opacity:1; transform:none; }
-
-  /* ── LOADING PROGRESS BAR ──────────────────────────────── */
-  #progress-bar {
-    position:fixed; top:0; left:0; z-index:9997;
-    height:2px;
-    background:linear-gradient(90deg,var(--gold),var(--ember));
-    width:0%;
-    transition:width .1s;
-  }
-
-  /* ── SMOOTH SCROLL INDICATOR ───────────────────────────── */
-  .scroll-indicator {
-    position:absolute; bottom:2rem; left:50%; transform:translateX(-50%);
-    display:flex; flex-direction:column; align-items:center; gap:.5rem;
-    color:var(--mist); font-size:.72rem; letter-spacing:.1em; text-transform:uppercase;
-    animation:bounce 2.5s ease-in-out infinite;
-  }
-  @keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(8px)} }
-  .scroll-indicator::after {
-    content:'';
-    width:1px; height:40px;
-    background:linear-gradient(180deg,var(--gold),transparent);
-  }
-
-  /* hidden products for filter */
-  .product-card.hidden { display:none; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#04050a;
+  --surface:#0b0d16;
+  --surface2:#111428;
+  --cyan:#00e5ff;
+  --cyan2:#00b4d8;
+  --violet:#7c3aed;
+  --violet2:#a78bfa;
+  --amber:#f59e0b;
+  --rose:#f43f5e;
+  --text:#e8eaf0;
+  --muted:#6b7280;
+  --border:rgba(0,229,255,0.1);
+  --glow:rgba(0,229,255,0.08);
+  --ff-head:'Syne',sans-serif;
+  --ff-serif:'Instrument Serif',serif;
+  --ff-body:'Outfit',sans-serif;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--ff-body);overflow-x:hidden;cursor:none}
+body::before{content:'';position:fixed;inset:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.02;pointer-events:none;z-index:9998}
+
+/* CURSOR */
+#cur{position:fixed;width:10px;height:10px;background:var(--cyan);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform .1s;mix-blend-mode:screen}
+#cur2{position:fixed;width:40px;height:40px;border:1px solid rgba(0,229,255,.4);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .3s,height .3s,border-color .3s}
+body:has(a:hover) #cur2,body:has(button:hover) #cur2{width:60px;height:60px;border-color:var(--violet2)}
+
+/* SCANLINE EFFECT */
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);pointer-events:none;z-index:9997}
+
+/* PROGRESS */
+#prog{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--violet2));z-index:9996;width:0%;transition:width .1s}
+
+/* ═══ NAV ═══════════════════════════════════════════════ */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1rem 5vw;
+  background:rgba(4,5,10,.85);
+  backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border);
+  animation:slideDown .7s var(--ease) both
+}
+@keyframes slideDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:none}}
+.logo{
+  font-family:var(--ff-head);font-size:1.6rem;font-weight:800;
+  background:linear-gradient(135deg,var(--cyan),var(--violet2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  letter-spacing:-.03em;text-decoration:none;cursor:pointer
+}
+.logo sup{font-size:.55em;-webkit-text-fill-color:var(--amber);color:var(--amber);vertical-align:super}
+.nav-menu{display:flex;align-items:center;gap:.2rem}
+.nav-link{
+  color:var(--muted);text-decoration:none;font-size:.82rem;font-weight:500;
+  letter-spacing:.06em;text-transform:uppercase;
+  padding:.5rem .9rem;border-radius:6px;
+  transition:all .2s;position:relative
+}
+.nav-link:hover,.nav-link.active{color:var(--text);background:var(--glow)}
+.nav-link.active::after{content:'';position:absolute;bottom:-1px;left:.9rem;right:.9rem;height:1.5px;background:var(--cyan)}
+.nav-cta{
+  background:linear-gradient(135deg,var(--cyan),var(--cyan2));
+  color:var(--bg)!important;font-weight:700!important;
+  padding:.5rem 1.3rem!important;border-radius:6px;
+  transition:box-shadow .2s,transform .2s!important
+}
+.nav-cta:hover{box-shadow:0 0 20px rgba(0,229,255,.35);transform:translateY(-1px)!important}
+.nav-cart{
+  position:relative;cursor:pointer;
+  color:var(--muted);font-size:1.1rem;padding:.5rem;
+  transition:color .2s
+}
+.nav-cart:hover{color:var(--cyan)}
+.cart-badge{
+  position:absolute;top:-2px;right:-2px;
+  background:var(--rose);color:#fff;
+  font-size:.58rem;font-weight:700;
+  width:15px;height:15px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center
+}
+.hamburger{display:none;flex-direction:column;gap:4px;cursor:pointer;padding:.3rem}
+.hamburger span{display:block;width:22px;height:2px;background:var(--text);border-radius:2px;transition:all .3s}
+
+/* ═══ PAGES ══════════════════════════════════════════════ */
+.page{display:none;min-height:100vh;padding-top:72px}
+.page.active{display:block}
+
+/* ═══ HERO ═══════════════════════════════════════════════ */
+#page-home{position:relative;overflow:hidden}
+.hero-wrap{
+  min-height:calc(100vh - 72px);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;padding:4rem 5vw 2rem;
+  position:relative;z-index:2
+}
+.hero-orb{
+  position:absolute;
+  border-radius:50%;filter:blur(80px);pointer-events:none
+}
+.orb1{width:600px;height:600px;background:radial-gradient(circle,rgba(0,229,255,.12),transparent 70%);top:-100px;left:50%;transform:translateX(-50%)}
+.orb2{width:400px;height:400px;background:radial-gradient(circle,rgba(124,58,237,.1),transparent 70%);top:20%;right:-100px}
+.orb3{width:300px;height:300px;background:radial-gradient(circle,rgba(245,158,11,.08),transparent 70%);bottom:10%;left:-50px}
+
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:.5rem;
+  border:1px solid rgba(0,229,255,.2);
+  background:rgba(0,229,255,.04);
+  padding:.35rem 1rem;border-radius:100px;
+  font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--cyan);margin-bottom:2rem;
+  animation:fadeUp .7s .1s var(--ease) both
+}
+.blink{width:6px;height:6px;background:var(--cyan);border-radius:50%;animation:blink 1.8s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
+
+.hero-title{
+  font-family:var(--ff-head);
+  font-size:clamp(2.8rem,7.5vw,7rem);
+  font-weight:800;line-height:.95;
+  letter-spacing:-.04em;
+  animation:fadeUp .7s .2s var(--ease) both
+}
+.hero-title .line2{
+  font-family:var(--ff-serif);
+  font-style:italic;font-weight:400;
+  background:linear-gradient(135deg,var(--cyan),var(--violet2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  letter-spacing:-.02em
+}
+.hero-title .line3{color:var(--amber)}
+
+.hero-sub{
+  font-size:clamp(.95rem,1.8vw,1.2rem);
+  color:var(--muted);max-width:580px;
+  line-height:1.75;font-weight:300;
+  margin:1.8rem auto 2.5rem;
+  animation:fadeUp .7s .35s var(--ease) both
+}
+
+.hero-btns{
+  display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;
+  animation:fadeUp .7s .5s var(--ease) both
+}
+.btn-cyan{
+  background:linear-gradient(135deg,var(--cyan),var(--cyan2));
+  color:var(--bg);border:none;padding:.9rem 2.2rem;
+  border-radius:8px;font-family:var(--ff-body);font-weight:700;
+  font-size:.95rem;cursor:pointer;letter-spacing:.03em;
+  transition:all .25s var(--ease);text-decoration:none;display:inline-block
+}
+.btn-cyan:hover{box-shadow:0 0 32px rgba(0,229,255,.4);transform:translateY(-3px)}
+.btn-outline{
+  background:transparent;color:var(--text);
+  border:1px solid rgba(255,255,255,.15);
+  padding:.9rem 2.2rem;border-radius:8px;
+  font-family:var(--ff-body);font-weight:500;font-size:.95rem;
+  cursor:pointer;transition:all .2s;text-decoration:none;display:inline-block
+}
+.btn-outline:hover{border-color:var(--cyan);color:var(--cyan)}
+
+.hero-stats{
+  display:flex;gap:3.5rem;justify-content:center;
+  margin-top:4.5rem;padding-top:3rem;
+  border-top:1px solid var(--border);
+  flex-wrap:wrap;
+  animation:fadeUp .7s .65s var(--ease) both
+}
+.stat-num{
+  font-family:var(--ff-head);font-size:2.8rem;
+  font-weight:800;color:var(--cyan);display:block;
+  line-height:1
+}
+.stat-lbl{font-size:.72rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-top:.3rem}
+
+/* MARQUEE */
+.marquee-bar{
+  overflow:hidden;border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  padding:.65rem 0;background:rgba(0,229,255,.02)
+}
+.mtrack{display:flex;gap:3rem;animation:marquee 30s linear infinite;white-space:nowrap;width:max-content}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.mitem{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);font-weight:600}
+.msep{color:var(--violet2);opacity:.6}
+
+/* ═══ SECTION COMMONS ════════════════════════════════════ */
+.section{padding:6rem 5vw}
+.section-inner{max-width:1200px;margin:0 auto}
+.s-tag{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);font-weight:700;margin-bottom:.8rem;display:block}
+.s-title{font-family:var(--ff-head);font-size:clamp(1.8rem,3.5vw,3rem);font-weight:800;line-height:1.1;letter-spacing:-.03em;margin-bottom:.8rem}
+.s-sub{color:var(--muted);font-size:.95rem;line-height:1.75;max-width:540px;font-weight:300}
+
+/* ═══ PRODUCT GRID ═══════════════════════════════════════ */
+.filter-row{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:2.5rem}
+.ftab{
+  background:transparent;border:1px solid var(--border);
+  color:var(--muted);padding:.4rem 1.1rem;border-radius:100px;
+  font-family:var(--ff-body);font-size:.78rem;cursor:pointer;
+  transition:all .2s;letter-spacing:.04em;font-weight:500
+}
+.ftab.on,.ftab:hover{background:var(--cyan);color:var(--bg);border-color:var(--cyan);font-weight:700}
+
+.pgrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(290px,1fr));
+  gap:1.4rem
+}
+.pcard{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;overflow:hidden;
+  transition:transform .35s var(--ease),box-shadow .35s;
+  cursor:pointer;position:relative
+}
+.pcard:hover{transform:translateY(-10px);box-shadow:0 20px 50px rgba(0,0,0,.5),0 0 0 1px rgba(0,229,255,.2),0 0 40px rgba(0,229,255,.06)}
+.pcard.hidden{display:none}
+
+.pcover{height:195px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.pcover-icon{font-size:4rem;position:relative;z-index:2;transition:transform .3s var(--ease);filter:drop-shadow(0 6px 20px rgba(0,0,0,.5))}
+.pcard:hover .pcover-icon{transform:scale(1.2) rotate(-4deg)}
+.pcover-glow{position:absolute;inset:0;opacity:0;transition:opacity .3s;background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.07),transparent 70%)}
+.pcard:hover .pcover-glow{opacity:1}
+
+.cv1{background:linear-gradient(135deg,#020818,#0a1628,#001a3a)}
+.cv2{background:linear-gradient(135deg,#0d0020,#1a0040,#2d006b)}
+.cv3{background:linear-gradient(135deg,#180800,#301500,#4a2200)}
+.cv4{background:linear-gradient(135deg,#001a12,#003522,#005535)}
+.cv5{background:linear-gradient(135deg,#1a0010,#350028,#550040)}
+.cv6{background:linear-gradient(135deg,#0a0518,#14093a,#200e5c)}
+.cv7{background:linear-gradient(135deg,#1a0a00,#3a1800,#5a2800)}
+.cv8{background:linear-gradient(135deg,#001018,#002535,#004050)}
+
+.pbadge{
+  position:absolute;top:10px;right:10px;
+  font-size:.62rem;font-weight:800;letter-spacing:.08em;
+  text-transform:uppercase;padding:.22rem .6rem;border-radius:4px
+}
+.b-new{background:var(--cyan);color:var(--bg)}
+.b-hot{background:var(--rose);color:#fff}
+.b-best{background:var(--amber);color:var(--bg)}
+.b-sale{background:var(--violet);color:#fff}
+
+.pbody{padding:1.4rem}
+.pcat{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--cyan);font-weight:700;margin-bottom:.4rem}
+.pstars{display:flex;gap:2px;color:var(--amber);font-size:.78rem;margin-bottom:.5rem}
+.rcount{color:var(--muted);font-size:.7rem;margin-left:.3rem}
+.ptitle{font-family:var(--ff-head);font-size:1.05rem;font-weight:700;line-height:1.3;margin-bottom:.4rem}
+.pdesc{font-size:.8rem;color:var(--muted);line-height:1.6;margin-bottom:1.1rem}
+.pmeta{display:flex;align-items:center;justify-content:space-between;gap:.8rem}
+.pprice{font-family:var(--ff-head);font-size:1.55rem;font-weight:800;color:var(--cyan)}
+.pold{font-size:.82rem;color:var(--muted);text-decoration:line-through;font-family:var(--ff-body);margin-left:.3rem}
+.pbtn{
+  background:var(--surface2);color:var(--cyan);
+  border:1px solid rgba(0,229,255,.25);
+  padding:.45rem 1rem;border-radius:6px;
+  font-size:.78rem;font-weight:700;cursor:pointer;
+  transition:all .2s;font-family:var(--ff-body);white-space:nowrap
+}
+.pbtn:hover{background:var(--cyan);color:var(--bg)}
+
+/* ═══ EBOOK READER PAGE ══════════════════════════════════ */
+#page-ebook{background:var(--bg)}
+.ebook-header{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:1.5rem 5vw;display:flex;align-items:center;gap:1.5rem;
+  flex-wrap:wrap
+}
+.ebook-back{
+  background:none;border:1px solid var(--border);color:var(--muted);
+  padding:.5rem 1rem;border-radius:6px;cursor:pointer;font-family:var(--ff-body);
+  font-size:.82rem;transition:all .2s
+}
+.ebook-back:hover{border-color:var(--cyan);color:var(--cyan)}
+.ebook-title-bar{flex:1}
+.ebook-name{font-family:var(--ff-head);font-size:1.2rem;font-weight:700}
+.ebook-meta{font-size:.78rem;color:var(--muted);margin-top:.2rem}
+
+.ebook-layout{display:grid;grid-template-columns:260px 1fr;min-height:calc(100vh - 72px - 80px)}
+.ebook-toc{
+  background:var(--surface);border-right:1px solid var(--border);
+  padding:1.5rem;overflow-y:auto;position:sticky;top:152px;
+  max-height:calc(100vh - 152px)
+}
+.toc-title{font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);margin-bottom:1rem}
+.toc-ch{
+  display:block;padding:.55rem .8rem;border-radius:6px;
+  font-size:.82rem;color:var(--muted);cursor:pointer;
+  transition:all .2s;border:none;background:none;
+  text-align:left;width:100%;font-family:var(--ff-body)
+}
+.toc-ch:hover{background:var(--glow);color:var(--text)}
+.toc-ch.active{background:rgba(0,229,255,.1);color:var(--cyan);font-weight:600}
+.toc-ch-num{font-size:.68rem;color:var(--muted);display:block;margin-bottom:.1rem}
+
+.ebook-content{padding:3rem 4vw;max-width:780px;line-height:1.85}
+.ch-display{display:none}.ch-display.active{display:block}
+
+.ch-header{margin-bottom:2.5rem;padding-bottom:2rem;border-bottom:1px solid var(--border)}
+.ch-num{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);font-weight:700;margin-bottom:.5rem}
+.ch-title{font-family:var(--ff-head);font-size:clamp(1.6rem,3vw,2.4rem);font-weight:800;line-height:1.1;letter-spacing:-.03em;margin-bottom:.8rem}
+.ch-sub{font-size:1rem;color:var(--muted);font-style:italic;font-family:var(--ff-serif)}
+.ch-body h2{font-family:var(--ff-head);font-size:1.35rem;font-weight:700;margin:2.2rem 0 .8rem;color:var(--text)}
+.ch-body h3{font-family:var(--ff-head);font-size:1.05rem;font-weight:700;margin:1.8rem 0 .6rem;color:var(--cyan)}
+.ch-body p{font-size:.95rem;color:rgba(232,234,240,.8);margin-bottom:1.2rem;line-height:1.85}
+.ch-body ul,.ch-body ol{margin:.8rem 0 1.2rem 1.5rem}
+.ch-body li{font-size:.93rem;color:rgba(232,234,240,.75);margin-bottom:.5rem;line-height:1.7}
+.ch-body strong{color:var(--text);font-weight:700}
+.ch-body em{color:var(--cyan);font-style:italic}
+.callout{
+  background:rgba(0,229,255,.05);border:1px solid rgba(0,229,255,.2);
+  border-left:3px solid var(--cyan);border-radius:0 8px 8px 0;
+  padding:1.2rem 1.4rem;margin:1.5rem 0;border-radius:8px;
+  border-left:3px solid var(--cyan)
+}
+.callout-title{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--cyan);margin-bottom:.5rem}
+.callout p{margin:0;font-size:.88rem}
+.tip{background:rgba(124,58,237,.06);border-left-color:var(--violet2)}
+.tip .callout-title{color:var(--violet2)}
+.warn{background:rgba(245,158,11,.06);border-left-color:var(--amber)}
+.warn .callout-title{color:var(--amber)}
+.code-block{
+  background:#0a0d1a;border:1px solid var(--border);
+  border-radius:8px;padding:1.2rem 1.5rem;
+  font-family:'Courier New',monospace;font-size:.83rem;
+  color:#a5f3fc;overflow-x:auto;margin:1.2rem 0;
+  line-height:1.65
+}
+.ch-nav{
+  display:flex;justify-content:space-between;
+  padding:2rem 0;border-top:1px solid var(--border);
+  margin-top:2rem;gap:1rem;flex-wrap:wrap
+}
+.ch-nav-btn{
+  background:var(--surface);border:1px solid var(--border);
+  color:var(--text);padding:.7rem 1.4rem;border-radius:8px;
+  cursor:pointer;font-family:var(--ff-body);font-size:.85rem;
+  transition:all .2s;font-weight:500
+}
+.ch-nav-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+
+/* LOCKED OVERLAY */
+.locked-overlay{
+  position:relative;overflow:hidden;
+  margin-top:2rem
+}
+.lock-blur{filter:blur(4px);pointer-events:none;user-select:none;opacity:.4}
+.lock-gate{
+  position:absolute;inset:0;display:flex;
+  align-items:center;justify-content:center;
+  background:linear-gradient(to bottom,transparent,rgba(4,5,10,.95) 40%);
+  z-index:10
+}
+.lock-box{
+  background:var(--surface);border:1px solid rgba(0,229,255,.25);
+  border-radius:14px;padding:2.5rem;text-align:center;max-width:380px;
+  box-shadow:0 20px 60px rgba(0,0,0,.5)
+}
+.lock-icon{font-size:2.5rem;margin-bottom:1rem}
+.lock-title{font-family:var(--ff-head);font-size:1.4rem;font-weight:800;margin-bottom:.5rem}
+.lock-sub{color:var(--muted);font-size:.88rem;margin-bottom:1.5rem;line-height:1.6}
+
+/* ═══ DIGITAL PRODUCTS PAGE ══════════════════════════════ */
+.dp-hero{
+  padding:5rem 5vw 3rem;text-align:center;
+  background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(124,58,237,.1),transparent 60%)
+}
+
+/* PRODUCT SECTIONS BY CATEGORY */
+.cat-section{margin-bottom:4rem}
+.cat-title-row{display:flex;align-items:center;gap:1rem;margin-bottom:2rem}
+.cat-icon{font-size:1.5rem}
+.cat-label{font-family:var(--ff-head);font-size:1.2rem;font-weight:700}
+.cat-line{flex:1;height:1px;background:var(--border)}
+
+/* ═══ ABOUT PAGE ══════════════════════════════════════════ */
+.about-hero{
+  padding:5rem 5vw;
+  background:radial-gradient(ellipse 70% 50% at 30% 50%,rgba(0,229,255,.07),transparent)
+}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;max-width:1100px;margin:0 auto}
+.about-visual{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:20px;padding:3rem;position:relative;overflow:hidden
+}
+.av-glow{position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(0,229,255,.06),transparent 60%);pointer-events:none}
+.mission-cards{display:grid;gap:1rem;margin-top:2rem}
+.mc{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.2rem 1.4rem}
+.mc-icon{font-size:1.4rem;margin-bottom:.5rem}
+.mc-title{font-weight:700;font-size:.9rem;margin-bottom:.3rem}
+.mc-desc{font-size:.8rem;color:var(--muted);line-height:1.6}
+
+/* ═══ CONTACT PAGE ════════════════════════════════════════ */
+.contact-wrap{max-width:700px;margin:0 auto;padding:4rem 5vw}
+.form-group{margin-bottom:1.2rem}
+.form-label{display:block;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
+.form-input,.form-textarea{
+  width:100%;background:var(--surface);
+  border:1px solid var(--border);border-radius:8px;
+  padding:.8rem 1rem;color:var(--text);
+  font-family:var(--ff-body);font-size:.9rem;
+  transition:border-color .2s;outline:none
+}
+.form-input:focus,.form-textarea:focus{border-color:var(--cyan)}
+.form-input::placeholder,.form-textarea::placeholder{color:rgba(107,114,128,.5)}
+.form-textarea{resize:vertical;min-height:130px}
+
+/* ═══ CART DRAWER ════════════════════════════════════════ */
+#cart-overlay{position:fixed;inset:0;z-index:2000;background:rgba(4,5,10,.75);backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .3s}
+#cart-overlay.open{opacity:1;pointer-events:all}
+#cart-drawer{
+  position:fixed;right:0;top:0;bottom:0;width:min(420px,100vw);
+  background:var(--surface);border-left:1px solid var(--border);
+  z-index:2001;transform:translateX(100%);transition:transform .4s var(--ease);
+  display:flex;flex-direction:column
+}
+#cart-drawer.open{transform:none}
+.chead{padding:1.6rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.chead-title{font-family:var(--ff-head);font-size:1.3rem;font-weight:700}
+.cclose{background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;transition:color .2s}
+.cclose:hover{color:var(--text)}
+.citems{flex:1;overflow-y:auto;padding:1.2rem}
+.cempty{text-align:center;color:var(--muted);padding:3rem 0}
+.cempty-icon{font-size:3rem;opacity:.3;margin-bottom:1rem}
+.citem{display:flex;gap:1rem;padding:1rem 0;border-bottom:1px solid var(--border);align-items:center}
+.ci-thumb{width:48px;height:48px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+.ci-name{font-weight:600;font-size:.88rem;margin-bottom:.2rem}
+.ci-price{color:var(--cyan);font-weight:700;font-size:.9rem}
+.ci-rm{margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;transition:color .2s;flex-shrink:0}
+.ci-rm:hover{color:var(--rose)}
+.cfoot{padding:1.5rem;border-top:1px solid var(--border)}
+.ctotal{display:flex;justify-content:space-between;font-family:var(--ff-head);font-size:1.25rem;font-weight:700;margin-bottom:1rem}
+.ctotal-amt{color:var(--cyan)}
+.btn-checkout{
+  width:100%;padding:.9rem;
+  background:linear-gradient(135deg,var(--cyan),var(--cyan2));
+  color:var(--bg);border:none;border-radius:8px;
+  font-family:var(--ff-body);font-weight:700;font-size:.95rem;
+  cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:.5rem
+}
+.btn-checkout:hover{box-shadow:0 0 24px rgba(0,229,255,.35);transform:translateY(-2px)}
+
+/* ═══ PAYMENT MODAL ══════════════════════════════════════ */
+#pay-modal{
+  position:fixed;inset:0;z-index:3000;
+  background:rgba(4,5,10,.9);backdrop-filter:blur(10px);
+  display:flex;align-items:center;justify-content:center;padding:1rem;
+  opacity:0;pointer-events:none;transition:opacity .3s
+}
+#pay-modal.open{opacity:1;pointer-events:all}
+.mbox{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:2.5rem;width:min(480px,100%);
+  position:relative;max-height:92vh;overflow-y:auto;
+  transform:scale(.94);transition:transform .3s var(--ease)
+}
+#pay-modal.open .mbox{transform:scale(1)}
+.mclose{position:absolute;top:1.2rem;right:1.2rem;background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer}
+.mclose:hover{color:var(--text)}
+.mtitle{font-family:var(--ff-head);font-size:1.5rem;font-weight:800;margin-bottom:.4rem}
+.msub{font-size:.85rem;color:var(--muted);margin-bottom:1.5rem}
+.secure-row{
+  display:flex;align-items:center;gap:.5rem;
+  background:rgba(0,229,255,.04);border:1px solid var(--border);
+  border-radius:7px;padding:.6rem 1rem;font-size:.73rem;color:var(--muted);margin-bottom:1.4rem
+}
+.secure-row .lock{color:var(--cyan)}
+.pmethods{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:1.4rem}
+.pmethod{
+  border:1.5px solid var(--border);border-radius:8px;
+  padding:.75rem;display:flex;align-items:center;gap:.6rem;
+  font-size:.83rem;cursor:pointer;transition:all .2s;
+  background:transparent;color:var(--text);font-family:var(--ff-body)
+}
+.pmethod:hover,.pmethod.on{border-color:var(--cyan);background:rgba(0,229,255,.05)}
+.form-row2{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+.btn-pay{
+  width:100%;padding:.95rem;
+  background:linear-gradient(135deg,var(--cyan),var(--cyan2));
+  color:var(--bg);border:none;border-radius:8px;
+  font-family:var(--ff-body);font-weight:700;font-size:.95rem;
+  cursor:pointer;margin-top:.8rem;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:.5rem
+}
+.btn-pay:hover{box-shadow:0 0 24px rgba(0,229,255,.4);transform:translateY(-2px)}
+
+/* ═══ TOAST ══════════════════════════════════════════════ */
+#toast{
+  position:fixed;bottom:2rem;right:2rem;
+  background:var(--surface);border:1px solid rgba(74,222,128,.3);
+  border-radius:12px;padding:.9rem 1.4rem;
+  display:flex;gap:.8rem;align-items:center;z-index:5000;
+  transform:translateY(100px);opacity:0;transition:all .4s var(--ease);
+  max-width:310px
+}
+#toast.show{transform:none;opacity:1}
+.t-icon{font-size:1.3rem}
+.t-msg strong{color:#4ade80;display:block;font-size:.88rem}
+.t-msg span{font-size:.78rem;color:var(--muted)}
+
+/* ═══ FOOTER ══════════════════════════════════════════════ */
+footer{
+  border-top:1px solid var(--border);
+  padding:3.5rem 5vw 2rem;
+  background:var(--surface)
+}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:2.5rem;margin-bottom:2.5rem}
+.flogo{font-family:var(--ff-head);font-size:1.5rem;font-weight:800;background:linear-gradient(135deg,var(--cyan),var(--violet2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.8rem;display:block}
+.fdesc{font-size:.83rem;color:var(--muted);line-height:1.7;max-width:260px}
+.fcol-title{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem}
+.flinks{list-style:none}
+.flinks li{margin-bottom:.6rem}
+.flinks a{color:rgba(232,234,240,.4);text-decoration:none;font-size:.83rem;transition:color .2s}
+.flinks a:hover{color:var(--cyan)}
+.fbottom{border-top:1px solid var(--border);padding-top:1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+.fcopy{font-size:.75rem;color:rgba(107,114,128,.5)}
+.fbadges{display:flex;gap:.7rem;flex-wrap:wrap}
+.fbadge{font-size:.68rem;padding:.25rem .65rem;border:1px solid var(--border);border-radius:4px;color:var(--muted);display:flex;align-items:center;gap:.3rem}
+
+/* ═══ REVEAL ANIMATIONS ══════════════════════════════════ */
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .55s var(--ease),transform .55s var(--ease)}
+.reveal.vis{opacity:1;transform:none}
+
+/* ═══ RESPONSIVE ══════════════════════════════════════════ */
+@media(max-width:900px){
+  .nav-menu{display:none}.hamburger{display:flex}
+  .ebook-layout{grid-template-columns:1fr}
+  .ebook-toc{display:none}.ebook-toc.mobile-open{display:block;position:fixed;top:72px;left:0;right:0;bottom:0;z-index:500;max-height:none}
+  .about-grid{grid-template-columns:1fr}
+  .footer-grid{grid-template-columns:1fr 1fr}
+  .form-row2{grid-template-columns:1fr}
+  .pmethods{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .hero-stats{gap:2rem}
+  .pgrid{grid-template-columns:1fr}
+  .footer-grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
 
-<!-- Progress bar -->
-<div id="progress-bar"></div>
+<div id="prog"></div>
+<div id="cur"></div>
+<div id="cur2"></div>
 
-<!-- Custom cursor -->
-<div id="cursor-dot"></div>
-<div id="cursor-ring"></div>
-
-<!-- ── NAV ─────────────────────────────────────────────────────── -->
-<nav>
-  <div class="logo">Zyn<span>.</span>apse</div>
-  <div class="nav-links">
-    <a href="#products">Store</a>
-    <a href="#features">Why Us</a>
-    <a href="#testimonials">Reviews</a>
-    <a href="#pricing">Bundles</a>
-    <a href="#faq">FAQ</a>
+<!-- ═══════════════════════════════════════════════════════
+     NAV
+════════════════════════════════════════════════════════ -->
+<nav id="main-nav">
+  <a class="logo" onclick="showPage('home')">Gen<sup>1</sup>Ai</a>
+  <div class="nav-menu" id="nav-menu">
+    <a class="nav-link active" onclick="showPage('home')" id="nl-home">Home</a>
+    <a class="nav-link" onclick="showPage('store')" id="nl-store">📚 Ebooks</a>
+    <a class="nav-link" onclick="showPage('products')" id="nl-products">⚡ Digital Tools</a>
+    <a class="nav-link" onclick="showPage('about')" id="nl-about">About</a>
+    <a class="nav-link" onclick="showPage('contact')" id="nl-contact">Contact</a>
     <div class="nav-cart" onclick="toggleCart()">
-      🛒 <span class="cart-badge" id="cart-count">0</span>
+      🛒<span class="cart-badge" id="cart-count">0</span>
     </div>
-    <a href="#products" class="btn-nav">Browse Books</a>
+    <a class="nav-link nav-cta" onclick="showPage('store')">Browse All →</a>
   </div>
-  <div style="display:flex;align-items:center;gap:1rem;display:none" id="mobile-nav">
-    <div class="nav-cart" onclick="toggleCart()">🛒 <span class="cart-badge" id="cart-count-m">0</span></div>
+  <div style="display:flex;align-items:center;gap:.8rem">
+    <div class="nav-cart" style="display:none" id="mob-cart" onclick="toggleCart()">🛒<span class="cart-badge" id="cart-count-m">0</span></div>
+    <div class="hamburger" id="ham" onclick="toggleMobileNav()">
+      <span></span><span></span><span></span>
+    </div>
   </div>
 </nav>
 
-<!-- ── HERO ─────────────────────────────────────────────────────── -->
-<section id="hero">
-  <div class="hero-bg"></div>
-  <div class="hero-grid"></div>
-  <div class="hero-content">
-    <div class="hero-badge">
-      <div class="badge-dot"></div>
-      AI-Powered Knowledge Hub
-    </div>
+<!-- Mobile nav drawer -->
+<div id="mob-nav" style="display:none;position:fixed;top:72px;left:0;right:0;background:var(--surface);border-bottom:1px solid var(--border);z-index:999;padding:1rem">
+  <a class="nav-link" style="display:block;margin-bottom:.3rem" onclick="showPage('home');closeMobileNav()">🏠 Home</a>
+  <a class="nav-link" style="display:block;margin-bottom:.3rem" onclick="showPage('store');closeMobileNav()">📚 Ebooks</a>
+  <a class="nav-link" style="display:block;margin-bottom:.3rem" onclick="showPage('products');closeMobileNav()">⚡ Digital Tools</a>
+  <a class="nav-link" style="display:block;margin-bottom:.3rem" onclick="showPage('about');closeMobileNav()">About</a>
+  <a class="nav-link" style="display:block;margin-bottom:.3rem" onclick="showPage('contact');closeMobileNav()">Contact</a>
+  <button class="btn-cyan" style="width:100%;margin-top:.5rem;border:none" onclick="showPage('store');closeMobileNav()">Browse All Books →</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PAGE: HOME
+════════════════════════════════════════════════════════ -->
+<div class="page active" id="page-home">
+  <div class="hero-wrap">
+    <div class="hero-orb orb1"></div>
+    <div class="hero-orb orb2"></div>
+    <div class="hero-orb orb3"></div>
+    <div class="hero-eyebrow"><div class="blink"></div>The #1 AI Knowledge Platform</div>
     <h1 class="hero-title">
-      Master <span class="accent">Artificial</span><br>
-      Intelligence,<br>
-      <span class="ember">Build Empires</span>
+      Build Your<br>
+      <span class="line2">AI-Powered</span><br>
+      <span class="line3">Empire</span>
     </h1>
-    <p class="hero-sub">
-      Premium ebooks, frameworks & digital tools crafted for entrepreneurs, agencies, and non-technical professionals ready to lead the AI revolution.
-    </p>
-    <div class="hero-ctas">
-      <a href="#products" class="btn-primary">🔥 Shop Bestsellers</a>
-      <a href="#features" class="btn-ghost">See What's Inside →</a>
+    <p class="hero-sub">Premium ebooks, AI tools & digital frameworks for entrepreneurs, agencies, and non-technical professionals. Stop learning theory — start making money with AI.</p>
+    <div class="hero-btns">
+      <button class="btn-cyan" onclick="showPage('store')">🔥 Explore Ebooks</button>
+      <button class="btn-outline" onclick="showPage('products')">⚡ Digital Tools →</button>
     </div>
     <div class="hero-stats">
-      <div class="stat">
-        <span class="stat-num" data-target="12400">0</span>
-        <span class="stat-lbl">Happy Readers</span>
+      <div class="stat"><span class="stat-num" data-t="15400">0</span><span class="stat-lbl">Happy Customers</span></div>
+      <div class="stat"><span class="stat-num" data-t="32">0</span><span class="stat-lbl">Premium Products</span></div>
+      <div class="stat"><span class="stat-num" data-t="98">0</span><span class="stat-lbl">% Satisfaction</span></div>
+      <div class="stat"><span class="stat-num" data-t="4">0</span><span class="stat-lbl">Languages</span></div>
+    </div>
+  </div>
+
+  <div class="marquee-bar">
+    <div class="mtrack">
+      <span class="mitem">Prompt Engineering</span><span class="msep">✦</span>
+      <span class="mitem">AI Automation</span><span class="msep">✦</span>
+      <span class="mitem">ChatGPT Mastery</span><span class="msep">✦</span>
+      <span class="mitem">Business AI Strategy</span><span class="msep">✦</span>
+      <span class="mitem">Freelancer Toolkit</span><span class="msep">✦</span>
+      <span class="mitem">Agency Systems</span><span class="msep">✦</span>
+      <span class="mitem">Machine Learning</span><span class="msep">✦</span>
+      <span class="mitem">Roman Urdu AI</span><span class="msep">✦</span>
+      <span class="mitem">Prompt Engineering</span><span class="msep">✦</span>
+      <span class="mitem">AI Automation</span><span class="msep">✦</span>
+      <span class="mitem">ChatGPT Mastery</span><span class="msep">✦</span>
+      <span class="mitem">Business AI Strategy</span><span class="msep">✦</span>
+      <span class="mitem">Freelancer Toolkit</span><span class="msep">✦</span>
+      <span class="mitem">Agency Systems</span><span class="msep">✦</span>
+      <span class="mitem">Machine Learning</span><span class="msep">✦</span>
+      <span class="mitem">Roman Urdu AI</span><span class="msep">✦</span>
+    </div>
+  </div>
+
+  <!-- Featured Products Preview -->
+  <div class="section">
+    <div class="section-inner">
+      <div class="reveal" style="text-align:center;margin-bottom:2.5rem">
+        <span class="s-tag">⚡ Bestsellers</span>
+        <h2 class="s-title">Top Products This Week</h2>
       </div>
-      <div class="stat">
-        <span class="stat-num" data-target="28">0</span>
-        <span class="stat-lbl">Premium Books</span>
-      </div>
-      <div class="stat">
-        <span class="stat-num" data-target="96">0</span>
-        <span class="stat-lbl">% Satisfaction</span>
+      <div class="pgrid" id="home-featured"></div>
+      <div style="text-align:center;margin-top:2.5rem" class="reveal">
+        <button class="btn-cyan" onclick="showPage('store')">View All 8 Ebooks →</button>
       </div>
     </div>
   </div>
-  <div class="scroll-indicator">Scroll</div>
-</section>
 
-<!-- ── MARQUEE ───────────────────────────────────────────────────── -->
-<div class="marquee-wrap">
-  <div class="marquee-track" id="marquee-track">
-    <span class="marquee-item">Prompt Engineering</span>
-    <span class="marquee-sep">✦</span>
-    <span class="marquee-item">AI Workflow Automation</span>
-    <span class="marquee-sep">✦</span>
-    <span class="marquee-item">ChatGPT Mastery</span>
-    <span class="marquee-sep">✦</span>
-    <span class="marquee-item">Business AI Strategy</span>
-    <span class="marquee-sep">✦</span>
-    <span class="marquee-item">Machine Learning Basics</span>
-    <span class="marquee-sep">✦</span>
-    <span class="marquee-item">Freelancer AI Toolkit</span>
-    <span class="marquee-sep">✦</span>
-    <span class="marquee-item">Agency Scale Systems</span>
-    <span class="marquee-sep">✦</span>
-    <span class="marquee-item">Prompt Engineering</span>
-    <span class="marquee-sep">✦</span>
-    <span class="marquee-item">AI Workflow Automation</span>
-    <span class="marquee-sep">✦</span>
-    <span class="marquee-item">ChatGPT Mastery</span>
-    <span class="marquee-sep">✦</span>
-    <span class="marquee-item">Business AI Strategy</span>
-    <span class="marquee-sep">✦</span>
-    <span class="marquee-item">Machine Learning Basics</span>
-    <span class="marquee-sep">✦</span>
-    <span class="marquee-item">Freelancer AI Toolkit</span>
-    <span class="marquee-sep">✦</span>
-    <span class="marquee-item">Agency Scale Systems</span>
-    <span class="marquee-sep">✦</span>
+  <!-- Why Gen1Ai -->
+  <div class="section" style="background:var(--surface)">
+    <div class="section-inner">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.5rem">
+        <div class="mc reveal"><div class="mc-icon">⚡</div><div class="mc-title">Instant Download</div><div class="mc-desc">Get your purchase delivered to your inbox in seconds. Read on any device.</div></div>
+        <div class="mc reveal"><div class="mc-icon">🔄</div><div class="mc-title">Free Lifetime Updates</div><div class="mc-desc">AI evolves fast. Your books update automatically — no extra charge, ever.</div></div>
+        <div class="mc reveal"><div class="mc-icon">🌐</div><div class="mc-title">Urdu + English</div><div class="mc-desc">All flagship titles available in English and Roman Urdu for South Asian markets.</div></div>
+        <div class="mc reveal"><div class="mc-icon">💳</div><div class="mc-title">30-Day Guarantee</div><div class="mc-desc">Not happy? 100% refund, no questions. We stand behind every product.</div></div>
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- ── PRODUCTS ──────────────────────────────────────────────────── -->
-<section id="products">
-  <div class="products-header reveal">
-    <div>
-      <span class="section-tag">⚡ Digital Library</span>
-      <h2 class="section-title">Bestselling Ebooks</h2>
-    </div>
-    <div class="filter-tabs">
-      <button class="filter-tab active" onclick="filterProducts('all',this)">All</button>
-      <button class="filter-tab" onclick="filterProducts('prompt',this)">Prompt Eng.</button>
-      <button class="filter-tab" onclick="filterProducts('automation',this)">Automation</button>
-      <button class="filter-tab" onclick="filterProducts('business',this)">Business</button>
-      <button class="filter-tab" onclick="filterProducts('freelance',this)">Freelance</button>
-    </div>
-  </div>
-
-  <div class="products-grid" id="products-grid">
-
-    <div class="product-card" data-cat="prompt">
-      <div class="product-cover cover-bg-1">
-        <div class="cover-shine"></div>
-        <div class="cover-icon">🧠</div>
-        <div class="product-badge badge-best">Bestseller</div>
+<!-- ═══════════════════════════════════════════════════════
+     PAGE: EBOOK STORE
+════════════════════════════════════════════════════════ -->
+<div class="page" id="page-store">
+  <div class="section">
+    <div class="section-inner">
+      <div class="reveal" style="margin-bottom:2rem">
+        <span class="s-tag">📚 Full Library</span>
+        <h1 class="s-title">AI Ebook Collection</h1>
+        <p class="s-sub">8 premium books. Real frameworks. Real results. Written for non-technical professionals who want to lead the AI era.</p>
       </div>
-      <div class="product-body">
-        <div class="product-cat">Prompt Engineering</div>
-        <div class="product-stars">
-          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
-          <span class="review-count">(847)</span>
-        </div>
-        <div class="product-title">The Complete Prompt Engineering Bible</div>
-        <div class="product-desc">200+ battle-tested prompts, frameworks & templates for ChatGPT, Claude & Gemini. Transform your AI output quality overnight.</div>
-        <div class="product-meta">
-          <div class="product-price">$29 <span class="old-price">$59</span></div>
-          <button class="btn-buy" onclick="addToCart('Prompt Engineering Bible','29','🧠','cover-bg-1')">Add to Cart</button>
-        </div>
+      <div class="filter-row">
+        <button class="ftab on" onclick="filterBooks('all',this)">All Books</button>
+        <button class="ftab" onclick="filterBooks('prompt',this)">Prompt Eng.</button>
+        <button class="ftab" onclick="filterBooks('automation',this)">Automation</button>
+        <button class="ftab" onclick="filterBooks('business',this)">Business AI</button>
+        <button class="ftab" onclick="filterBooks('freelance',this)">Freelance</button>
+        <button class="ftab" onclick="filterBooks('urdu',this)">🇵🇰 Urdu</button>
       </div>
-    </div>
-
-    <div class="product-card" data-cat="automation">
-      <div class="product-cover cover-bg-2">
-        <div class="cover-shine"></div>
-        <div class="cover-icon">⚙️</div>
-        <div class="product-badge badge-new">New</div>
-      </div>
-      <div class="product-body">
-        <div class="product-cat">Automation</div>
-        <div class="product-stars">
-          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
-          <span class="review-count">(512)</span>
-        </div>
-        <div class="product-title">AI Workflow Automation Playbook</div>
-        <div class="product-desc">Step-by-step systems to automate your business using Make, Zapier & AI. Save 20+ hours per week, scale without hiring.</div>
-        <div class="product-meta">
-          <div class="product-price">$39</div>
-          <button class="btn-buy" onclick="addToCart('AI Workflow Automation','39','⚙️','cover-bg-2')">Add to Cart</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="product-card" data-cat="business">
-      <div class="product-cover cover-bg-3">
-        <div class="cover-shine"></div>
-        <div class="cover-icon">🚀</div>
-        <div class="product-badge badge-best">Top Rated</div>
-      </div>
-      <div class="product-body">
-        <div class="product-cat">Business AI</div>
-        <div class="product-stars">
-          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
-          <span class="review-count">(634)</span>
-        </div>
-        <div class="product-title">Scaling AI in Business: Blueprint</div>
-        <div class="product-desc">Executive guide to deploying AI across marketing, operations, HR & sales. Frameworks used by Fortune 500 companies, explained simply.</div>
-        <div class="product-meta">
-          <div class="product-price">$49 <span class="old-price">$99</span></div>
-          <button class="btn-buy" onclick="addToCart('Scaling AI in Business','49','🚀','cover-bg-3')">Add to Cart</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="product-card" data-cat="freelance">
-      <div class="product-cover cover-bg-4">
-        <div class="cover-shine"></div>
-        <div class="cover-icon">💰</div>
-        <div class="product-badge badge-sale">Sale</div>
-      </div>
-      <div class="product-body">
-        <div class="product-cat">Freelance AI</div>
-        <div class="product-stars">
-          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
-          <span class="review-count">(389)</span>
-        </div>
-        <div class="product-title">Freelancer's AI Income Accelerator</div>
-        <div class="product-desc">How to sell AI services, build retainer clients & earn $5K/month as a solo AI consultant. Includes client scripts & proposals.</div>
-        <div class="product-meta">
-          <div class="product-price">$19 <span class="old-price">$45</span></div>
-          <button class="btn-buy" onclick="addToCart('AI Income Accelerator','19','💰','cover-bg-4')">Add to Cart</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="product-card" data-cat="prompt">
-      <div class="product-cover cover-bg-5">
-        <div class="cover-shine"></div>
-        <div class="cover-icon">🎯</div>
-      </div>
-      <div class="product-body">
-        <div class="product-cat">Prompt Engineering</div>
-        <div class="product-stars">
-          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
-          <span class="review-count">(271)</span>
-        </div>
-        <div class="product-title">ChatGPT for Marketing Mastery</div>
-        <div class="product-desc">500 marketing prompts, content calendars & ad copy frameworks. Produce a month of content in a single afternoon.</div>
-        <div class="product-meta">
-          <div class="product-price">$24</div>
-          <button class="btn-buy" onclick="addToCart('ChatGPT Marketing Mastery','24','🎯','cover-bg-5')">Add to Cart</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="product-card" data-cat="business">
-      <div class="product-cover cover-bg-6">
-        <div class="cover-shine"></div>
-        <div class="cover-icon">📊</div>
-        <div class="product-badge badge-new">New</div>
-      </div>
-      <div class="product-body">
-        <div class="product-cat">Business AI</div>
-        <div class="product-stars">
-          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
-          <span class="review-count">(198)</span>
-        </div>
-        <div class="product-title">AI Analytics & Data Decisions</div>
-        <div class="product-desc">Use AI to analyze business data, build dashboards & make smarter decisions—no coding required. Built for startup founders & operators.</div>
-        <div class="product-meta">
-          <div class="product-price">$34</div>
-          <button class="btn-buy" onclick="addToCart('AI Analytics & Data','34','📊','cover-bg-6')">Add to Cart</button>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</section>
-
-<!-- ── FEATURES ──────────────────────────────────────────────────── -->
-<section id="features">
-  <div class="features-layout">
-    <div class="feature-visual">
-      <div class="fv-card fv-main">
-        <div class="fv-label">Your AI Knowledge Score</div>
-        <div class="fv-big">9.4 / 10</div>
-        <div class="fv-sub">After completing The Prompt Bible</div>
-        <div class="fv-bar"><div class="fv-fill" style="width:94%"></div></div>
-        <div class="fv-row"><span>Beginner</span><span>Expert</span></div>
-      </div>
-      <div class="fv-card fv-stat1">
-        <div class="fv-label">Revenue Increase</div>
-        <div class="fv-big" style="font-size:1.6rem">+340%</div>
-        <div class="fv-sub">Avg. freelance clients after AI Accelerator</div>
-      </div>
-      <div class="fv-card fv-stat2">
-        <div class="fv-label">Hours Saved / Week</div>
-        <div class="fv-big" style="font-size:1.6rem">22 hrs</div>
-        <div class="fv-sub">Via workflow automation</div>
-      </div>
-    </div>
-    <div>
-      <span class="section-tag">🛡️ Why Zynapse</span>
-      <h2 class="section-title">Knowledge That<br>Pays for Itself</h2>
-      <p class="section-sub">Every book is built for immediate ROI—not theory. Real frameworks, real templates, real results.</p>
-      <ul class="feature-list" style="margin-top:2rem">
-        <li class="feature-item">
-          <div class="fi-icon">⚡</div>
-          <div><div class="fi-title">Instant Download</div><div class="fi-desc">Your purchase delivers immediately to your email. No waiting, no shipping — pure digital value.</div></div>
-        </li>
-        <li class="feature-item">
-          <div class="fi-icon">🔄</div>
-          <div><div class="fi-title">Lifetime Access & Updates</div><div class="fi-desc">AI evolves fast. Every book you buy gets free updates forever as the landscape changes.</div></div>
-        </li>
-        <li class="feature-item">
-          <div class="fi-icon">🌐</div>
-          <div><div class="fi-title">Multi-language Support</div><div class="fi-desc">Available in English, Roman Urdu, and more. Accessible to growing markets worldwide.</div></div>
-        </li>
-        <li class="feature-item">
-          <div class="fi-icon">🎁</div>
-          <div><div class="fi-title">Bonus Templates Included</div><div class="fi-desc">Each book ships with copy-paste templates, checklists & frameworks you can use on Day 1.</div></div>
-        </li>
-        <li class="feature-item">
-          <div class="fi-icon">💳</div>
-          <div><div class="fi-title">30-Day Money-Back Guarantee</div><div class="fi-desc">Not happy? Get a full refund — no questions asked. We stand behind every word.</div></div>
-        </li>
-      </ul>
+      <div class="pgrid" id="store-grid"></div>
     </div>
   </div>
-</section>
+</div>
 
-<!-- ── TESTIMONIALS ──────────────────────────────────────────────── -->
-<section id="testimonials">
-  <div style="text-align:center" class="reveal">
-    <span class="section-tag">💬 Real Stories</span>
-    <h2 class="section-title">Readers Are Building<br>Real Businesses</h2>
+<!-- ═══════════════════════════════════════════════════════
+     PAGE: EBOOK READER
+════════════════════════════════════════════════════════ -->
+<div class="page" id="page-ebook">
+  <div class="ebook-header">
+    <button class="ebook-back" onclick="showPage('store')">← Back to Store</button>
+    <div class="ebook-title-bar">
+      <div class="ebook-name" id="ebook-title-bar">Loading...</div>
+      <div class="ebook-meta" id="ebook-meta-bar">Free Preview — Chapters 1-2</div>
+    </div>
+    <button class="btn-cyan" style="border:none;padding:.6rem 1.4rem;font-size:.85rem" id="ebook-buy-btn" onclick="buyCurrentBook()">🔒 Unlock Full Book</button>
   </div>
-  <div class="testimonials-grid">
-    <div class="testi-card">
-      <div class="testi-stars">★★★★★</div>
-      <p class="testi-text">The Prompt Engineering Bible changed everything. I tripled my client output in just 3 weeks. Every marketer needs this.</p>
-      <div class="testi-author">
-        <div class="testi-avatar" style="background:linear-gradient(135deg,#2d1b4e,#4a2c6e)">👩</div>
-        <div><div class="testi-name">Sara Khaled</div><div class="testi-role">Marketing Director, Dubai</div></div>
-      </div>
+  <div class="ebook-layout">
+    <div class="ebook-toc" id="ebook-toc">
+      <div class="toc-title">📋 Table of Contents</div>
+      <div id="toc-list"></div>
     </div>
-    <div class="testi-card">
-      <div class="testi-stars">★★★★★</div>
-      <p class="testi-text">The automation playbook saved my agency 25 hours/week. ROI in 3 days. This isn't just a book — it's a business system.</p>
-      <div class="testi-author">
-        <div class="testi-avatar" style="background:linear-gradient(135deg,#1a1a2e,#0f3460)">👨</div>
-        <div><div class="testi-name">Ali Hassan</div><div class="testi-role">Agency Owner, Lahore</div></div>
+    <div class="ebook-content" id="ebook-body"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PAGE: DIGITAL PRODUCTS
+════════════════════════════════════════════════════════ -->
+<div class="page" id="page-products">
+  <div class="dp-hero">
+    <span class="s-tag">⚡ Digital Products</span>
+    <h1 class="s-title reveal">Tools That Build Billion-Dollar Businesses</h1>
+    <p class="s-sub reveal" style="margin:0 auto">AI templates, courses, SaaS tools, and automation systems — everything you need to scale from zero to enterprise.</p>
+  </div>
+  <div class="section">
+    <div class="section-inner" id="dp-content"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PAGE: ABOUT
+════════════════════════════════════════════════════════ -->
+<div class="page" id="page-about">
+  <div class="about-hero">
+    <div class="about-grid">
+      <div>
+        <span class="s-tag">🌍 Our Mission</span>
+        <h1 class="s-title">We're Making AI<br>Accessible to Everyone</h1>
+        <p class="s-sub" style="margin-top:1rem">Gen1Ai was founded on one belief: the AI revolution should not be limited to Silicon Valley engineers. Every entrepreneur, every freelancer, every business owner in Karachi, Lagos, or Dubai deserves access to the same AI leverage.</p>
+        <p class="s-sub" style="margin-top:1rem">We write in Roman Urdu, English, and more — because knowledge should speak your language.</p>
+        <div style="margin-top:2rem;display:flex;gap:1.5rem;flex-wrap:wrap">
+          <div><div class="stat-num" style="font-size:2.2rem">15K+</div><div class="stat-lbl">Global Students</div></div>
+          <div><div class="stat-num" style="font-size:2.2rem">32</div><div class="stat-lbl">Products</div></div>
+          <div><div class="stat-num" style="font-size:2.2rem">4</div><div class="stat-lbl">Languages</div></div>
+        </div>
       </div>
-    </div>
-    <div class="testi-card">
-      <div class="testi-stars">★★★★★</div>
-      <p class="testi-text">I went from zero clients to $4,200/month in 60 days using the Freelancer Accelerator. The client scripts alone are worth 10x the price.</p>
-      <div class="testi-author">
-        <div class="testi-avatar" style="background:linear-gradient(135deg,#0a1f0a,#2d5a2d)">👩</div>
-        <div><div class="testi-name">Nadia Rahman</div><div class="testi-role">Freelance AI Consultant</div></div>
-      </div>
-    </div>
-    <div class="testi-card">
-      <div class="testi-stars">★★★★★</div>
-      <p class="testi-text">As a startup founder with no tech background, the Business AI Blueprint gave me the confidence to implement AI across our entire operations.</p>
-      <div class="testi-author">
-        <div class="testi-avatar" style="background:linear-gradient(135deg,#2e0a0a,#6e2d2d)">👨</div>
-        <div><div class="testi-name">Usman Tariq</div><div class="testi-role">Startup Founder, Karachi</div></div>
-      </div>
-    </div>
-    <div class="testi-card">
-      <div class="testi-stars">★★★★★</div>
-      <p class="testi-text">Finally — AI content written for real business people, not just tech nerds. The Roman Urdu version makes it even more accessible for my team.</p>
-      <div class="testi-author">
-        <div class="testi-avatar" style="background:linear-gradient(135deg,#0a1a2e,#2d4a6e)">👩</div>
-        <div><div class="testi-name">Fatima Malik</div><div class="testi-role">Operations Manager</div></div>
-      </div>
-    </div>
-    <div class="testi-card">
-      <div class="testi-stars">★★★★★</div>
-      <p class="testi-text">Best $39 I've ever spent. The ChatGPT marketing book alone generates thousands in client retainers every month. Pure gold.</p>
-      <div class="testi-author">
-        <div class="testi-avatar" style="background:linear-gradient(135deg,#1a3a1a,#2d5a2d)">👨</div>
-        <div><div class="testi-name">Raza Ahmed</div><div class="testi-role">Digital Marketing Agency</div></div>
+      <div class="about-visual">
+        <div class="av-glow"></div>
+        <div style="font-size:3rem;margin-bottom:1rem">🧠</div>
+        <div style="font-family:var(--ff-head);font-size:1.5rem;font-weight:800;margin-bottom:.8rem">Built for the<br>Next Generation</div>
+        <div style="font-size:.9rem;color:var(--muted);line-height:1.7">Gen1Ai is the first AI education company built for emerging market entrepreneurs — people who are hungry, resourceful, and ready to use AI to leapfrog the old economy.</div>
       </div>
     </div>
   </div>
-</section>
-
-<!-- ── PRICING ────────────────────────────────────────────────────── -->
-<section id="pricing">
-  <span class="section-tag">📦 Bundle & Save</span>
-  <h2 class="section-title">Choose Your Level</h2>
-  <p class="section-sub">Get more, pay less. Every bundle includes lifetime updates and bonus templates.</p>
-  <div class="pricing-grid">
-    <div class="price-card reveal">
-      <div class="price-plan">Starter</div>
-      <div class="price-amount"><sup>$</sup>29</div>
-      <div class="price-period">Single book of your choice</div>
-      <ul class="price-features">
-        <li><span class="check">✓</span> 1 Premium Ebook</li>
-        <li><span class="check">✓</span> Lifetime Access</li>
-        <li><span class="check">✓</span> Bonus Templates</li>
-        <li><span class="check">✓</span> PDF + Epub Format</li>
-        <li class="inactive"><span>✗</span> Community Access</li>
-        <li class="inactive"><span>✗</span> Future Books</li>
-      </ul>
-      <button class="btn-plan btn-plan-outline" onclick="openPaymentModal('Starter Bundle','29')">Get Started</button>
-    </div>
-    <div class="price-card featured reveal">
-      <div class="price-featured-badge">⚡ Most Popular</div>
-      <div class="price-plan">AI Mastery Bundle</div>
-      <div class="price-amount"><sup>$</sup>97</div>
-      <div class="price-period">All 6 current ebooks</div>
-      <ul class="price-features">
-        <li><span class="check">✓</span> All 6 Premium Ebooks</li>
-        <li><span class="check">✓</span> Lifetime Access + Updates</li>
-        <li><span class="check">✓</span> 50+ Bonus Templates</li>
-        <li><span class="check">✓</span> PDF + Epub Format</li>
-        <li><span class="check">✓</span> Private Community</li>
-        <li class="inactive"><span>✗</span> Future Books</li>
-      </ul>
-      <button class="btn-plan btn-plan-gold" onclick="openPaymentModal('AI Mastery Bundle','97')">Get All 6 Books →</button>
-    </div>
-    <div class="price-card reveal">
-      <div class="price-plan">Lifetime Elite</div>
-      <div class="price-amount"><sup>$</sup>197</div>
-      <div class="price-period">Everything, forever</div>
-      <ul class="price-features">
-        <li><span class="check">✓</span> All Current & Future Books</li>
-        <li><span class="check">✓</span> Lifetime Access + Updates</li>
-        <li><span class="check">✓</span> All Bonus Templates</li>
-        <li><span class="check">✓</span> PDF + Epub Format</li>
-        <li><span class="check">✓</span> VIP Community Access</li>
-        <li><span class="check">✓</span> Every New Release Free</li>
-      </ul>
-      <button class="btn-plan btn-plan-outline" onclick="openPaymentModal('Lifetime Elite','197')">Go Lifetime</button>
+  <div class="section" style="background:var(--surface)">
+    <div class="section-inner">
+      <h2 class="s-title reveal" style="text-align:center;margin-bottom:2rem">Our Values</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.2rem">
+        <div class="mc reveal"><div class="mc-icon">🎯</div><div class="mc-title">Practical Over Theoretical</div><div class="mc-desc">Every product must generate ROI within 30 days. No fluff, no filler.</div></div>
+        <div class="mc reveal"><div class="mc-icon">🌍</div><div class="mc-title">Global Accessibility</div><div class="mc-desc">Knowledge should be affordable and available in every language.</div></div>
+        <div class="mc reveal"><div class="mc-icon">🔥</div><div class="mc-title">Relentless Updates</div><div class="mc-desc">AI changes weekly. Our books update monthly. You're always current.</div></div>
+        <div class="mc reveal"><div class="mc-icon">🤝</div><div class="mc-title">Community First</div><div class="mc-desc">Every purchase grants access to a private community of builders.</div></div>
+      </div>
     </div>
   </div>
-</section>
+</div>
 
-<!-- ── FAQ ────────────────────────────────────────────────────────── -->
-<section id="faq">
-  <div class="reveal" style="text-align:center;margin-bottom:1rem">
-    <span class="section-tag">❓ Questions</span>
-    <h2 class="section-title">Frequently Asked</h2>
-  </div>
-  <div class="faq-grid reveal">
-    <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)">
-        How do I receive my ebook after purchase?
-        <span class="faq-arrow">▾</span>
-      </div>
-      <div class="faq-a"><div class="faq-a-inner">Immediately after payment, you'll receive a download link via email. You can access your purchase instantly on any device — phone, tablet, or desktop — in both PDF and Epub formats.</div></div>
+<!-- ═══════════════════════════════════════════════════════
+     PAGE: CONTACT
+════════════════════════════════════════════════════════ -->
+<div class="page" id="page-contact">
+  <div class="contact-wrap">
+    <span class="s-tag">✉️ Get in Touch</span>
+    <h1 class="s-title" style="margin-bottom:.8rem">Talk to the Team</h1>
+    <p class="s-sub" style="margin-bottom:2.5rem">Questions about a product? Want to collaborate, partner, or translate? We respond within 24 hours.</p>
+
+    <div style="display:grid;gap:1.5rem;margin-bottom:2.5rem">
+      <div class="mc"><div class="mc-icon">📧</div><div class="mc-title">Email</div><div class="mc-desc">support@gen1ai.com</div></div>
+      <div class="mc"><div class="mc-icon">💬</div><div class="mc-title">WhatsApp</div><div class="mc-desc">Available for enterprise & bundle inquiries</div></div>
+      <div class="mc"><div class="mc-icon">🤝</div><div class="mc-title">Partnerships</div><div class="mc-desc">Affiliate program: Earn 40% commission on every sale</div></div>
     </div>
-    <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)">
-        Are these books beginner-friendly?
-        <span class="faq-arrow">▾</span>
-      </div>
-      <div class="faq-a"><div class="faq-a-inner">Absolutely. All books are written for non-technical professionals and business owners. No coding knowledge required. We explain everything from first principles with practical, step-by-step guidance.</div></div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)">
-        What payment methods do you accept?
-        <span class="faq-arrow">▾</span>
-      </div>
-      <div class="faq-a"><div class="faq-a-inner">We accept all major credit/debit cards (Visa, Mastercard, Amex), PayPal, and bank transfers. All transactions are encrypted with 256-bit SSL security via Stripe.</div></div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)">
-        Is there a refund policy?
-        <span class="faq-arrow">▾</span>
-      </div>
-      <div class="faq-a"><div class="faq-a-inner">Yes — 30-day no-questions-asked money-back guarantee. If you're not completely satisfied with your purchase, email us and we'll refund 100% within 24 hours.</div></div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)">
-        Will I get updates when books are revised?
-        <span class="faq-arrow">▾</span>
-      </div>
-      <div class="faq-a"><div class="faq-a-inner">Yes! All updates are free, forever. AI changes fast and we update our books regularly. You'll receive a notification email whenever a new version is published.</div></div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)">
-        Are books available in Urdu?
-        <span class="faq-arrow">▾</span>
-      </div>
-      <div class="faq-a"><div class="faq-a-inner">Yes! Our flagship titles are available in Roman Urdu for our South Asian audience. Look for the 🇵🇰 badge on product pages, or contact us for availability on a specific title.</div></div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:2rem">
+      <h3 style="font-family:var(--ff-head);font-size:1.2rem;margin-bottom:1.4rem">Send a Message</h3>
+      <div class="form-group"><label class="form-label">Full Name</label><input type="text" class="form-input" placeholder="Your name"></div>
+      <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" placeholder="you@email.com"></div>
+      <div class="form-group"><label class="form-label">Subject</label><input type="text" class="form-input" placeholder="What's this about?"></div>
+      <div class="form-group"><label class="form-label">Message</label><textarea class="form-textarea" placeholder="Tell us more..."></textarea></div>
+      <button class="btn-cyan" style="border:none;width:100%;padding:.9rem;font-size:.95rem;font-weight:700;cursor:pointer" onclick="sendContact()">Send Message →</button>
     </div>
   </div>
-</section>
+</div>
 
-<!-- ── CTA BANNER ────────────────────────────────────────────────── -->
-<section id="cta">
-  <span class="section-tag">🏆 Start Today</span>
-  <h2 class="section-title reveal">The AI Wave Waits<br>For No One.</h2>
-  <p class="section-sub reveal" style="margin:0 auto 2.5rem;text-align:center">Every day you wait, competitors gain the edge. Join 12,400+ professionals who are already building AI-powered businesses.</p>
-  <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap" class="reveal">
-    <a href="#products" class="btn-primary">🔥 Start Learning Now</a>
-    <a href="#pricing" class="btn-ghost">View All Bundles →</a>
-  </div>
-</section>
-
-<!-- ── FOOTER ─────────────────────────────────────────────────────── -->
+<!-- ═══════════════════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════════════════ -->
 <footer>
   <div class="footer-grid">
-    <div class="footer-brand">
-      <span class="logo">Zyn<span style="-webkit-text-fill-color:var(--ember);color:var(--ember)">.</span>apse</span>
-      <p class="footer-desc">Premium AI knowledge for the entrepreneurs, agencies, and professionals ready to lead the next decade of business.</p>
-      <div style="margin-top:1.5rem;display:flex;gap:.8rem">
-        <a href="#" style="color:var(--mist);font-size:1.2rem;text-decoration:none">𝕏</a>
-        <a href="#" style="color:var(--mist);font-size:1.2rem;text-decoration:none">in</a>
-        <a href="#" style="color:var(--mist);font-size:1.2rem;text-decoration:none">📸</a>
+    <div>
+      <span class="flogo">Gen<sup style="-webkit-text-fill-color:var(--amber)">1</sup>Ai</span>
+      <p class="fdesc">The #1 AI knowledge platform for the next generation of global entrepreneurs.</p>
+      <div style="margin-top:1.2rem;display:flex;gap:.8rem">
+        <a href="#" style="color:var(--muted);font-size:1rem;text-decoration:none;transition:color .2s" onmouseover="this.style.color='var(--cyan)'" onmouseout="this.style.color='var(--muted)'">𝕏</a>
+        <a href="#" style="color:var(--muted);font-size:1rem;text-decoration:none;transition:color .2s" onmouseover="this.style.color='var(--cyan)'" onmouseout="this.style.color='var(--muted)'">in</a>
+        <a href="#" style="color:var(--muted);font-size:1rem;text-decoration:none;transition:color .2s" onmouseover="this.style.color='var(--cyan)'" onmouseout="this.style.color='var(--muted)'">📸</a>
+        <a href="#" style="color:var(--muted);font-size:1rem;text-decoration:none;transition:color .2s" onmouseover="this.style.color='var(--cyan)'" onmouseout="this.style.color='var(--muted)'">▶️</a>
       </div>
     </div>
     <div>
-      <div class="footer-col-title">Books</div>
-      <ul class="footer-links">
-        <li><a href="#">Prompt Engineering Bible</a></li>
-        <li><a href="#">AI Workflow Automation</a></li>
-        <li><a href="#">Business AI Blueprint</a></li>
-        <li><a href="#">Freelancer Accelerator</a></li>
-        <li><a href="#">ChatGPT for Marketing</a></li>
+      <div class="fcol-title">Ebooks</div>
+      <ul class="flinks">
+        <li><a onclick="showPage('store')">Prompt Bible</a></li>
+        <li><a onclick="showPage('store')">AI Automation</a></li>
+        <li><a onclick="showPage('store')">Business Blueprint</a></li>
+        <li><a onclick="showPage('store')">Freelancer Kit</a></li>
+        <li><a onclick="showPage('store')">Roman Urdu Series</a></li>
       </ul>
     </div>
     <div>
-      <div class="footer-col-title">Company</div>
-      <ul class="footer-links">
-        <li><a href="#">About Us</a></li>
+      <div class="fcol-title">Company</div>
+      <ul class="flinks">
+        <li><a onclick="showPage('about')">About Gen1Ai</a></li>
+        <li><a onclick="showPage('contact')">Contact</a></li>
         <li><a href="#">Affiliate Program</a></li>
         <li><a href="#">Blog</a></li>
-        <li><a href="#">Press</a></li>
-        <li><a href="#">Contact</a></li>
+        <li><a href="#">Press Kit</a></li>
       </ul>
     </div>
     <div>
-      <div class="footer-col-title">Legal</div>
-      <ul class="footer-links">
+      <div class="fcol-title">Legal</div>
+      <ul class="flinks">
         <li><a href="#">Privacy Policy</a></li>
         <li><a href="#">Terms of Service</a></li>
         <li><a href="#">Refund Policy</a></li>
@@ -1561,299 +833,715 @@
       </ul>
     </div>
   </div>
-  <div class="footer-bottom">
-    <div class="footer-copy">© 2025 Zynapse. All rights reserved. Built to 1Bn. 🚀</div>
-    <div class="footer-badges">
-      <div class="footer-badge"><span>🔒</span> SSL Secured</div>
-      <div class="footer-badge"><span>💳</span> Stripe Payments</div>
-      <div class="footer-badge"><span>✅</span> 30-Day Guarantee</div>
+  <div class="fbottom">
+    <div class="fcopy">© 2025 Gen1Ai. All rights reserved. Building to $1 Billion. 🚀</div>
+    <div class="fbadges">
+      <div class="fbadge">🔒 SSL Secured</div>
+      <div class="fbadge">💳 Stripe</div>
+      <div class="fbadge">✅ 30-Day Guarantee</div>
+      <div class="fbadge">🇵🇰 Urdu Supported</div>
     </div>
   </div>
 </footer>
 
-<!-- ── CART DRAWER ─────────────────────────────────────────────────── -->
+<!-- CART DRAWER -->
 <div id="cart-overlay" onclick="toggleCart()"></div>
 <div id="cart-drawer">
-  <div class="cart-header">
-    <div class="cart-title">🛒 Your Cart</div>
-    <button class="cart-close" onclick="toggleCart()">✕</button>
+  <div class="chead">
+    <div class="chead-title">🛒 Your Cart</div>
+    <button class="cclose" onclick="toggleCart()">✕</button>
   </div>
-  <div class="cart-items" id="cart-items">
-    <div class="cart-empty">
-      <div class="cart-empty-icon">🛒</div>
-      <p>Your cart is empty.</p>
-      <p style="font-size:.8rem;margin-top:.4rem">Add some ebooks to get started!</p>
-    </div>
+  <div class="citems" id="cart-items-list">
+    <div class="cempty"><div class="cempty-icon">🛒</div><p>Cart is empty</p><p style="font-size:.78rem;margin-top:.3rem">Find something you love!</p></div>
   </div>
-  <div class="cart-footer">
-    <div class="cart-total">
-      <span>Total</span>
-      <span class="total-price" id="cart-total">$0</span>
-    </div>
-    <button class="btn-checkout" onclick="openPaymentModal('Cart','0')">
-      🔒 Secure Checkout
-    </button>
+  <div class="cfoot">
+    <div class="ctotal"><span>Total</span><span class="ctotal-amt" id="cart-total-amt">$0</span></div>
+    <button class="btn-checkout" onclick="openPayModal('Your Cart','0')">🔒 Secure Checkout</button>
   </div>
 </div>
 
-<!-- ── PAYMENT MODAL ──────────────────────────────────────────────── -->
-<div id="payment-modal">
-  <div class="modal-box">
-    <button class="modal-close-btn" onclick="closePaymentModal()">✕</button>
-    <div class="modal-title">Complete Purchase</div>
-    <div class="modal-sub" id="modal-product-name">AI Mastery Bundle — $97</div>
-
-    <div class="secure-badge">
-      <span class="lock">🔒</span>
-      256-bit SSL encryption · Powered by Stripe · Your data is never stored
+<!-- PAYMENT MODAL -->
+<div id="pay-modal">
+  <div class="mbox">
+    <button class="mclose" onclick="closePayModal()">✕</button>
+    <div class="mtitle">Complete Purchase</div>
+    <div class="msub" id="m-product">AI Mastery Bundle</div>
+    <div class="secure-row"><span class="lock">🔒</span>256-bit SSL · Powered by Stripe · Never stored</div>
+    <div class="pmethods">
+      <button class="pmethod on" onclick="selPay(this)">💳 Card</button>
+      <button class="pmethod" onclick="selPay(this)">🅿️ PayPal</button>
+      <button class="pmethod" onclick="selPay(this)">🍎 Apple Pay</button>
+      <button class="pmethod" onclick="selPay(this)">G Google Pay</button>
     </div>
-
-    <div class="payment-methods">
-      <button class="pay-method active" onclick="selectPayMethod(this,'card')">💳 Credit Card</button>
-      <button class="pay-method" onclick="selectPayMethod(this,'paypal')">🅿️ PayPal</button>
-      <button class="pay-method" onclick="selectPayMethod(this,'apple')">🍎 Apple Pay</button>
-      <button class="pay-method" onclick="selectPayMethod(this,'google')">G Google Pay</button>
-    </div>
-
-    <div id="card-form">
-      <div class="form-group">
-        <label class="form-label">Full Name</label>
-        <input type="text" class="form-input" placeholder="Muhammad Ali Khan">
+    <div id="pay-form">
+      <div class="form-group"><label class="form-label">Full Name</label><input type="text" class="form-input" placeholder="Your full name"></div>
+      <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" placeholder="you@email.com"></div>
+      <div class="form-group"><label class="form-label">Card Number</label><input type="text" class="form-input" placeholder="4242 4242 4242 4242" maxlength="19" oninput="fmtCard(this)"></div>
+      <div class="form-row2">
+        <div class="form-group"><label class="form-label">Expiry</label><input type="text" class="form-input" placeholder="MM / YY" maxlength="7" oninput="fmtExp(this)"></div>
+        <div class="form-group"><label class="form-label">CVC</label><input type="text" class="form-input" placeholder="•••" maxlength="4"></div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Email Address</label>
-        <input type="email" class="form-input" placeholder="you@email.com">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Card Number</label>
-        <input type="text" class="form-input" placeholder="4242 4242 4242 4242" maxlength="19" oninput="formatCard(this)">
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Expiry</label>
-          <input type="text" class="form-input" placeholder="MM / YY" maxlength="7" oninput="formatExpiry(this)">
-        </div>
-        <div class="form-group">
-          <label class="form-label">CVC</label>
-          <input type="text" class="form-input" placeholder="•••" maxlength="4">
-        </div>
-      </div>
-      <button class="btn-pay" onclick="processPayment(this)">
-        🔒 Pay <span id="pay-amount">$97</span> Securely
-      </button>
+      <button class="btn-pay" onclick="processPay(this)">🔒 Pay <span id="pay-amount-label">$0</span> Securely</button>
     </div>
   </div>
 </div>
 
-<!-- ── TOAST ──────────────────────────────────────────────────────── -->
-<div id="toast">
-  <span class="toast-icon">✅</span>
-  <div class="toast-msg">
-    <strong id="toast-title">Added to cart!</strong>
-    <span id="toast-body">Continue shopping or checkout.</span>
-  </div>
-</div>
+<!-- TOAST -->
+<div id="toast"><span class="t-icon">✅</span><div class="t-msg"><strong id="t-title">Done!</strong><span id="t-body">.</span></div></div>
 
-<!-- ── JAVASCRIPT ─────────────────────────────────────────────────── -->
 <script>
-// ── CURSOR ──────────────────────────────────────────────────────────
-const dot  = document.getElementById('cursor-dot');
-const ring = document.getElementById('cursor-ring');
-let mx=0,my=0,rx=0,ry=0;
-document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
-(function animate(){
-  rx += (mx-rx)*.18; ry += (my-ry)*.18;
-  dot.style.left  = mx+'px'; dot.style.top  = my+'px';
-  ring.style.left = rx+'px'; ring.style.top = ry+'px';
-  requestAnimationFrame(animate);
-})();
+// ══ DATA ══════════════════════════════════════════════════════════════════
 
-// ── PROGRESS BAR ─────────────────────────────────────────────────────
-window.addEventListener('scroll', () => {
-  const p = (window.scrollY/(document.body.scrollHeight-window.innerHeight))*100;
-  document.getElementById('progress-bar').style.width = p+'%';
-});
+const BOOKS = [
+  {
+    id:'pb', cat:'prompt', badge:'b-best', badgeText:'Bestseller', cover:'cv1', icon:'🧠',
+    title:'The Complete Prompt Engineering Bible', price:29, oldPrice:59,
+    cat_label:'Prompt Engineering',
+    desc:'200+ battle-tested prompts, frameworks & templates for ChatGPT, Claude & Gemini.',
+    stars:5, reviews:847, featured:true,
+    chapters:[
+      {
+        title:'What Is Prompt Engineering & Why It Pays',
+        subtitle:'The most valuable skill of the AI era — explained simply',
+        free:true,
+        body:`<h2>Welcome to the AI Revolution</h2>
+<p>You are reading this at the most extraordinary moment in the history of technology. <strong>Artificial Intelligence</strong> has crossed from science fiction into your smartphone, your business, and your daily decisions. And right now, there is a single skill that separates the people who merely use AI from the people who <em>command it</em>.</p>
+<p>That skill is Prompt Engineering.</p>
+<div class="callout"><div class="callout-title">💡 Key Insight</div><p>Prompt engineering is not about being a programmer. It is about knowing how to <strong>talk to AI</strong> in a way that gets you exceptional, professional-grade output every single time.</p></div>
+<h2>What Exactly Is a Prompt?</h2>
+<p>A prompt is any instruction, question, or input you give to an AI model. When you type "write me a marketing email," that is a prompt. When a lawyer types "summarize this 200-page contract and highlight risk clauses," that is a prompt. Every single interaction you have with ChatGPT, Claude, or Gemini starts with a prompt.</p>
+<p>The difference between an <strong>average prompt</strong> and an <strong>expert prompt</strong> can mean the difference between a generic, useless response and a publish-ready article, a converting sales page, or a detailed business plan.</p>
+<div class="callout tip"><div class="callout-title">📊 Real Numbers</div><p>Studies show that professionals who use structured prompt frameworks produce <strong>3-5x better AI output</strong> than those who use casual, unstructured prompts. The ROI on learning this skill is immediate.</p></div>
+<h2>Why This Skill Is Worth Thousands of Dollars</h2>
+<p>Consider this: a skilled prompt engineer at a top technology company earns $175,000 to $300,000 per year. But you do not need to work for a tech company to profit from this skill. Freelancers are charging $500 to $5,000 per project to help businesses build prompt systems. Marketing agencies are adding prompt libraries as a premium service. Consultants are selling AI transformation packages built entirely on prompt engineering.</p>
+<p>The market is just beginning. <strong>You are early.</strong></p>
+<h2>What You Will Learn in This Book</h2>
+<p>This book is divided into five core parts:</p>
+<ul>
+<li><strong>Part 1: Foundations</strong> — How AI language models actually work and why structure matters</li>
+<li><strong>Part 2: The Seven Prompt Frameworks</strong> — The exact templates used by professionals daily</li>
+<li><strong>Part 3: Industry Applications</strong> — Prompts for marketing, sales, legal, HR, finance, and more</li>
+<li><strong>Part 4: Building Prompt Systems</strong> — How to create reusable libraries for your team or clients</li>
+<li><strong>Part 5: Monetization</strong> — How to turn this skill into a service, a product, or a career</li>
+</ul>
+<div class="callout warn"><div class="callout-title">⚠️ Important</div><p>Do not skip chapters. Each section builds on the previous one. The frameworks in Part 2 only make sense after you understand the foundations in Part 1.</p></div>`
+      },
+      {
+        title:'The 7 Core Prompt Frameworks',
+        subtitle:'The exact templates professionals use every day',
+        free:true,
+        body:`<h2>Framework #1: The ROLE-TASK-FORMAT Method</h2>
+<p>This is the single most powerful prompt structure you will ever use. It works across every AI model and every industry. Here is the formula:</p>
+<div class="code-block">You are a [ROLE]. Your task is to [TASK]. 
+Format the output as [FORMAT].</div>
+<h3>Example in Practice</h3>
+<div class="code-block">You are a senior digital marketing strategist with 10 years of experience in e-commerce. Your task is to write a 7-email welcome sequence for a new subscriber to an AI ebook store. Format the output as numbered emails, each with a subject line, preview text, and 150-word body.</div>
+<div class="callout"><div class="callout-title">✅ Why This Works</div><p>AI models respond to context. By giving the model a role, it activates patterns associated with expertise in that domain. By specifying the task clearly, you eliminate ambiguity. By defining format, you get structured, usable output.</p></div>
+<h2>Framework #2: The CHAIN-OF-THOUGHT Prompt</h2>
+<p>For complex reasoning tasks, instruct the AI to think step by step before giving a final answer.</p>
+<div class="code-block">Before answering, think through this step by step:
 
-// ── COUNTER ANIMATION ─────────────────────────────────────────────────
-function animateCounter(el, target, suffix=''){
-  const dur=2000, start=performance.now();
-  (function tick(now){
-    const p=Math.min((now-start)/dur,1);
-    const v=Math.round(p*target);
-    el.textContent = v.toLocaleString()+suffix;
-    if(p<1) requestAnimationFrame(tick);
-  })(performance.now());
-}
-const statNums = document.querySelectorAll('.stat-num');
-const suffixes = ['','',' %'];
-let counted=false;
-const heroObs = new IntersectionObserver(entries=>{
-  if(entries[0].isIntersecting && !counted){
-    counted=true;
-    statNums.forEach((el,i)=>{
-      animateCounter(el,+el.dataset.target,suffixes[i]||'');
-    });
+Problem: [Your complex problem here]
+
+Step 1: Identify the key variables.
+Step 2: Analyze each variable separately.
+Step 3: Synthesize your findings.
+Step 4: Provide your final recommendation.</div>
+<h2>Framework #3: The CONTRAST Prompt</h2>
+<p>Get dramatically better output by showing the AI what you do NOT want alongside what you do want.</p>
+<div class="code-block">Write a LinkedIn post about AI productivity.
+
+DO: Use a conversational tone. Start with a surprising statistic. Include one personal story. End with a question.
+
+DO NOT: Use corporate jargon. Write more than 200 words. Use hashtags. Sound like a press release.</div>
+<div class="callout tip"><div class="callout-title">💡 Pro Tip</div><p>The DO NOT section is often more powerful than the DO section. Constraints force creativity and precision.</p></div>
+<h2>Frameworks 4-7: Unlocked in Full Version</h2>`
+      },
+      {
+        title:'Prompts for Marketing & Sales',
+        subtitle:'500 copy-paste prompts for every marketing scenario',
+        free:false,
+        body:`<h2>Email Marketing Prompts</h2><p>This chapter contains 80+ prompts specifically designed for email marketing...</p>`
+      },
+      {
+        title:'Building a Prompt Library for Clients',
+        subtitle:'Turn your skills into a $2,000+/month service',
+        free:false,
+        body:`<h2>The Prompt Library Business Model</h2><p>How to package and sell prompt systems...</p>`
+      },
+      {
+        title:'Monetizing Prompt Engineering',
+        subtitle:'From skill to $5K/month — the exact roadmap',
+        free:false,
+        body:`<h2>Your Monetization Roadmap</h2><p>Six income streams from prompt engineering...</p>`
+      }
+    ]
+  },
+  {
+    id:'aa', cat:'automation', badge:'b-new', badgeText:'New', cover:'cv2', icon:'⚙️',
+    title:'AI Workflow Automation Playbook', price:39,
+    cat_label:'Automation',
+    desc:'Step-by-step systems to automate your business using Make, Zapier & AI. Save 20+ hours/week.',
+    stars:5, reviews:512, featured:true,
+    chapters:[
+      {
+        title:'Why Automation Is the #1 Business Skill of 2025',
+        subtitle:'The shift from manual to AI-automated business',
+        free:true,
+        body:`<h2>The Automation Revolution</h2>
+<p>In 2025, the most valuable business resource is not money, employees, or office space. It is <strong>time multiplied by intelligence</strong>. The companies winning today are not necessarily bigger — they are smarter. They use automation to do in 10 minutes what their competitors do in 10 hours.</p>
+<p>This book teaches you exactly how to build those systems, using tools that cost less than your phone plan.</p>
+<div class="callout"><div class="callout-title">💡 Real Example</div><p>A solo consultant using the systems in this book automated their lead generation, client onboarding, invoicing, and content creation — freeing up 22 hours per week. That is equivalent to hiring a full-time employee, for $79/month in software costs.</p></div>
+<h2>The Three Automation Layers</h2>
+<p>Every business automation exists on one of three layers:</p>
+<ul>
+<li><strong>Layer 1 — Task Automation:</strong> Removing repetitive manual tasks (email sorting, data entry, scheduling)</li>
+<li><strong>Layer 2 — Workflow Automation:</strong> Connecting tools so information flows automatically between systems</li>
+<li><strong>Layer 3 — Intelligence Automation:</strong> Using AI to make decisions and generate content within automated workflows</li>
+</ul>
+<p>Most businesses only reach Layer 1. This book takes you all the way to Layer 3.</p>
+<div class="callout tip"><div class="callout-title">🎯 This Book's Promise</div><p>By Chapter 6, you will have built your first complete AI workflow automation. Not a concept — a real, working system in your business.</p></div>`
+      },
+      {
+        title:'Your Automation Toolkit: Make, Zapier & AI',
+        subtitle:'The exact tools and how to connect them',
+        free:true,
+        body:`<h2>The Core Tools You Need</h2>
+<p>You do not need to learn to code. These three tools handle everything:</p>
+<h3>Tool 1: Make (formerly Integromat)</h3>
+<p>Make is a visual workflow builder. You drag and drop boxes representing apps, draw lines connecting them, and the platform handles all the technical connections. It is like drawing a flowchart that actually executes itself.</p>
+<div class="callout"><div class="callout-title">💰 Pricing</div><p>Make's free tier allows 1,000 operations per month — enough to test all the automations in this book. The $9/month plan handles most small business needs.</p></div>
+<h3>Tool 2: Zapier</h3>
+<p>Zapier is simpler than Make but connects to more apps (6,000+). Best for simple trigger-action automations. "When this happens, do that."</p>
+<h3>Tool 3: OpenAI API or Claude API</h3>
+<p>The intelligence layer. By connecting Make or Zapier to an AI API, you can have AI write emails, summarize documents, classify customer requests, and make decisions — all automatically, without any human involvement.</p>
+<div class="code-block"># Example: Automated Customer Support Flow
+1. Customer submits support ticket (Typeform)
+2. Make receives the submission
+3. Make sends the text to Claude API with prompt:
+   "Classify this support ticket as: billing, technical, or general.
+    Then write a helpful first response."
+4. Claude returns classification + draft response
+5. Make sends the draft to support agent for review
+6. Agent approves with one click — email sends automatically</div>`
+      },
+      {
+        title:'10 Automation Systems You Can Build Today',
+        subtitle:'Copy-paste workflows for immediate results',
+        free:false,
+        body:`<h2>Automation System #1: AI Content Pipeline</h2><p>Full instructions for building an automated content creation system...</p>`
+      }
+    ]
+  },
+  {
+    id:'bi', cat:'business', badge:'b-best', badgeText:'Top Rated', cover:'cv3', icon:'🚀',
+    title:'Scaling AI in Business: The Blueprint', price:49, oldPrice:99,
+    cat_label:'Business AI',
+    desc:'Executive guide to deploying AI across marketing, ops, HR & sales. Used by 3,000+ founders.',
+    stars:5, reviews:634, featured:true,
+    chapters:[
+      {
+        title:'The AI-First Business Model',
+        subtitle:'How the most profitable companies in 2025 are structured',
+        free:true,
+        body:`<h2>What Is an AI-First Business?</h2>
+<p>An AI-first business does not simply use AI tools. It is architected around AI capabilities from the ground up. Every department — marketing, sales, operations, HR, finance — has AI embedded into its core workflows, not bolted on as an afterthought.</p>
+<p>The difference between a traditional business that uses AI and an AI-first business is like the difference between a company that emails PDFs versus one that has a cloud-native CRM. The tools look similar from the outside. The internal efficiency is in a different universe.</p>
+<div class="callout"><div class="callout-title">📊 Data Point</div><p>McKinsey's 2024 AI report found that companies in the top quartile of AI adoption are <strong>2.5x more profitable</strong> than industry peers and 3x more likely to report revenue growth exceeding 20%.</p></div>
+<h2>The Five AI Business Pillars</h2>
+<ol>
+<li><strong>AI-Augmented Marketing</strong> — Content, targeting, personalization at scale</li>
+<li><strong>AI-Driven Sales</strong> — Lead scoring, outreach automation, proposal generation</li>
+<li><strong>AI Operations</strong> — Process automation, quality control, reporting</li>
+<li><strong>AI Customer Experience</strong> — Support, personalization, retention</li>
+<li><strong>AI Finance & Analytics</strong> — Forecasting, anomaly detection, optimization</li>
+</ol>
+<p>This book dedicates a full chapter to building each pillar, with specific tools, prompts, and implementation checklists.</p>`
+      },
+      {
+        title:'AI Marketing: Content, Ads & SEO at Scale',
+        subtitle:'How to produce 10x content with 1/10th the team',
+        free:true,
+        body:`<h2>The Content Multiplication Framework</h2>
+<p>The old marketing model: hire writers, brief them, review drafts, publish, repeat. Cost per article: $200-$500. Timeline: 1 week per piece. For a serious content strategy, you needed a team and a large budget.</p>
+<p>The new model: one strategist, AI as the writing engine, human editor for quality. Cost per article: $8-$15. Timeline: 2-3 hours. The same team that produced 4 articles per month now produces 40.</p>
+<div class="callout"><div class="callout-title">🚀 Case Study</div><p>An e-commerce brand in Lahore used this framework to grow their blog from 12 to 280 articles in 4 months. Organic traffic increased 840%. They hired zero additional writers.</p></div>
+<h2>The AI SEO Stack</h2>
+<p>Three tools. One workflow. Unlimited organic content:</p>
+<ul>
+<li><strong>Ahrefs / Semrush</strong> — Keyword research and competitor analysis</li>
+<li><strong>Claude or ChatGPT</strong> — Content generation with SEO optimization</li>
+<li><strong>SurferSEO</strong> — On-page optimization scoring</li>
+</ul>`
+      },
+      { title:'AI Sales Systems', subtitle:'', free:false, body:`<p>Locked content...</p>` },
+      { title:'AI Operations Playbook', subtitle:'', free:false, body:`<p>Locked content...</p>` },
+      { title:'Building Your AI Dream Team', subtitle:'', free:false, body:`<p>Locked content...</p>` }
+    ]
+  },
+  {
+    id:'fa', cat:'freelance', badge:'b-sale', badgeText:'Sale', cover:'cv4', icon:'💰',
+    title:"Freelancer's AI Income Accelerator", price:19, oldPrice:45,
+    cat_label:'Freelance AI',
+    desc:'How to sell AI services, build retainer clients & earn $5K/month as a solo AI consultant.',
+    stars:5, reviews:389, featured:false,
+    chapters:[
+      {
+        title:'The $5K/Month AI Freelancer Blueprint',
+        subtitle:'The exact roadmap from zero to full-time income',
+        free:true,
+        body:`<h2>Why AI Freelancing Is the Opportunity of the Decade</h2>
+<p>Let me be direct with you: there has never been a better time in history to be a solo service provider. The AI revolution has created an enormous knowledge gap between what businesses need to do and what they know how to do. You are the bridge.</p>
+<p>Businesses are desperate for someone who can walk in, understand their workflows, and implement AI solutions that save time and make money. They will pay $1,500 to $10,000 per project for this. And right now, the supply of competent AI consultants is tiny compared to the demand.</p>
+<div class="callout"><div class="callout-title">💰 Income Tiers</div><p><strong>Month 1-2:</strong> $500-$1,500 (first clients, building portfolio)<br><strong>Month 3-4:</strong> $2,000-$3,500 (referrals, repeat clients)<br><strong>Month 5-6:</strong> $4,000-$7,000 (retainers, premium positioning)</p></div>
+<h2>The Three Services That Pay Best Right Now</h2>
+<ol>
+<li><strong>AI Content Systems</strong> — Set up and train AI content workflows for brands ($1,500-$3,000/project)</li>
+<li><strong>ChatGPT Staff Training</strong> — Teach a team of 5-50 people to use AI effectively ($500-$2,000/workshop)</li>
+<li><strong>AI Automation Consulting</strong> — Identify and automate the biggest time-wasters in a business ($2,000-$8,000/engagement)</li>
+</ol>`
+      },
+      { title:'Client Acquisition Scripts & Proposals', subtitle:'', free:false, body:`<p>Locked...</p>` }
+    ]
+  },
+  {
+    id:'cm', cat:'prompt', badge:'', badgeText:'', cover:'cv5', icon:'🎯',
+    title:'ChatGPT for Marketing Mastery', price:24,
+    cat_label:'Prompt Engineering',
+    desc:'500 marketing prompts, content calendars & ad copy frameworks. A month of content in one afternoon.',
+    stars:5, reviews:271, featured:false,
+    chapters:[
+      { title:'The Marketing Prompt System', subtitle:'', free:true, body:`<h2>Introduction</h2><p>This book contains 500 copy-paste marketing prompts organized by channel, goal, and industry. Chapter 1 explains the system. Chapters 2-9 are the prompts themselves — no fluff, pure value.</p><div class="callout"><div class="callout-title">How to Use This Book</div><p>Find your channel (Email, Social, Ads, SEO, etc.), find your goal (awareness, conversion, retention), and copy the prompt. Customize the [BRACKETS] with your specific details and paste into ChatGPT or Claude.</p></div>` },
+      { title:'500 Copy-Paste Prompts', subtitle:'', free:false, body:`` }
+    ]
+  },
+  {
+    id:'ml', cat:'business', badge:'b-new', badgeText:'New', cover:'cv6', icon:'📊',
+    title:'AI Analytics & Smart Decisions', price:34,
+    cat_label:'Business AI',
+    desc:'Use AI to analyze business data, build dashboards & make smarter decisions — no coding required.',
+    stars:5, reviews:198, featured:false,
+    chapters:[
+      { title:'Data-Driven Decisions with AI', subtitle:'', free:true, body:`<h2>Introduction</h2><p>Every business generates data. Most businesses ignore it. This book shows you how to use AI to turn your messy spreadsheets, CRM data, and financial reports into clear, actionable intelligence.</p>` },
+      { title:'Building AI Dashboards', subtitle:'', free:false, body:`` }
+    ]
+  },
+  {
+    id:'ur', cat:'urdu', badge:'b-new', badgeText:'New 🇵🇰', cover:'cv7', icon:'🇵🇰',
+    title:'Prompt Engineering — Roman Urdu Edition', price:22,
+    cat_label:'Roman Urdu',
+    desc:'Prompt engineering ka complete guide — Roman Urdu mein likha gaya, Pakistani entrepreneurs ke liye.',
+    stars:5, reviews:445, featured:true,
+    chapters:[
+      {
+        title:'AI Kya Hai Aur Yeh Paise Kyun Banata Hai',
+        subtitle:'Aik aam banda AI se kaise kamata hai',
+        free:true,
+        body:`<h2>Shuruat Kahan Se Karein?</h2>
+<p>Agar aap yeh book parh rahe hain, toh aap pehle hi un logon se aage hain jo AI ke baare mein sirf suntay hain. <strong>AI ek tool hai</strong> — bilkul waisay jaisay calculator aik tool tha. Jis ne pehle calculator seekha, usne doosron se pehle kaam tez kiya. Aaj AI ka waqt hai.</p>
+<p>Pakistan, India, aur poori duniya mein aise log hain jo sirf ChatGPT se har mahine <em>lakhon rupees</em> kama rahay hain. Kuch clients dhundhtay hain, kuch content likhte hain, kuch apni services ko AI se 10 guna tez kartay hain.</p>
+<div class="callout"><div class="callout-title">💡 Real Example — Karachi</div><p>Ek 24 saal ka graphic designer jis ne yeh system seekha, woh ab ChatGPT se client briefs likhta hai, proposals generate karta hai, aur social media content banata hai. Iska kaam 3 guna ho gaya — clients 2 guna ho gaye.</p></div>
+<h2>Prompt Engineering Kya Hai?</h2>
+<p>Jab aap ChatGPT ya Claude ko kuch likhne ko kehte hain, woh likhna "prompt" kehlata hai. Lekin sab prompts ek jaisay nahi hote. Ek achha prompt aur ek bura prompt ka farq waisay hi hai jaisay ek achi brief aur ek ghalat brief ka farq.</p>
+<p>Is book mein aap seekhenge:</p>
+<ul>
+<li>Sahi prompt kaise likhain jo AI se professional kaam karwaye</li>
+<li>Kaunse 7 frameworks har jagah kaam aate hain</li>
+<li>Marketing, sales, freelancing ke liye ready-made prompts</li>
+<li>Is skill ko paise mein kaise badle</li>
+</ul>
+<div class="callout tip"><div class="callout-title">🎯 Wada</div><p>Is book ke aakhri chapter tak aap ek aisi skill rakh lengay jo Pakistan mein abhi sirf 1% logon ke paas hai.</p></div>`
+      },
+      { title:'7 Core Prompt Frameworks — Urdu Mein', subtitle:'', free:false, body:`` }
+    ]
+  },
+  {
+    id:'ag', cat:'business', badge:'b-hot', badgeText:'🔥 Hot', cover:'cv8', icon:'🏢',
+    title:'Agency AI Transformation Guide', price:59, oldPrice:120,
+    cat_label:'Business AI',
+    desc:'Complete system for agencies to add AI services, triple output, and command premium prices.',
+    stars:5, reviews:312, featured:false,
+    chapters:[
+      {
+        title:'The Agency AI Revolution',
+        subtitle:'How agencies are doubling revenue without hiring',
+        free:true,
+        body:`<h2>The Agency Opportunity Right Now</h2>
+<p>If you run a marketing, design, development, or consulting agency, you are sitting on one of the biggest opportunities in business history. Your clients trust you. They look to you for expertise. And right now, <strong>they desperately need someone to help them navigate AI</strong> — and they will pay a significant premium for that guidance.</p>
+<p>The agencies growing fastest right now are not the ones that have added more clients. They are the ones that have added AI to their service stack — and charged accordingly.</p>
+<div class="callout"><div class="callout-title">📊 Agency Revenue Data</div><p>Agencies that have added AI services as a standalone offering report an average revenue increase of <strong>67%</strong> in the first year, with minimal additional overhead.</p></div>
+<h2>What AI Services Agencies Are Selling</h2>
+<ul>
+<li><strong>AI Content Strategy & Production</strong> ($2,500-$8,000/month retainer)</li>
+<li><strong>AI Workflow Audits & Implementation</strong> ($3,000-$15,000 one-time)</li>
+<li><strong>AI Staff Training Programs</strong> ($1,000-$5,000 per workshop)</li>
+<li><strong>Monthly AI Management</strong> ($1,500-$4,000/month)</li>
+</ul>`
+      },
+      { title:'Pricing AI Services Profitably', subtitle:'', free:false, body:`` }
+    ]
   }
-},{threshold:.5});
-heroObs.observe(document.getElementById('hero'));
+];
 
-// ── SCROLL REVEAL ─────────────────────────────────────────────────────
-const revealObs = new IntersectionObserver(entries=>{
-  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
-},{threshold:.12});
-document.querySelectorAll('.reveal,.feature-item,.testi-card,.product-card').forEach(el=>{
-  revealObs.observe(el);
-});
+const DIGITAL_PRODUCTS = [
+  {
+    cat:'🤖 AI Prompt Packs', items:[
+      { icon:'📝', cover:'cv1', title:'Ultimate Marketing Prompt Pack', desc:'1,200 copy-paste prompts for every marketing scenario — social, email, ads, SEO. Lifetime updates.', price:47, badge:'b-best', badgeText:'Bestseller' },
+      { icon:'⚖️', cover:'cv3', title:'Legal & Contract AI Prompts', desc:'250 prompts for contracts, NDAs, client agreements, and compliance — reviewed by legal professionals.', price:37, badge:'', badgeText:'' },
+      { icon:'💼', cover:'cv6', title:'Sales & Outreach Prompt System', desc:'Cold email sequences, LinkedIn outreach, proposal templates — all powered by AI prompts that convert.', price:29, badge:'b-new', badgeText:'New' }
+    ]
+  },
+  {
+    cat:'⚡ Automation Templates', items:[
+      { icon:'🔄', cover:'cv2', title:'Make.com Business Bundle (10 Workflows)', desc:'10 pre-built Make.com automation scenarios: lead capture, invoicing, content publishing, CRM sync & more.', price:79, badge:'b-hot', badgeText:'🔥 Hot' },
+      { icon:'📊', cover:'cv8', title:'AI-Powered Google Sheets Dashboard', desc:'Complete business analytics dashboard with built-in AI analysis. Paste your data, get instant insights.', price:49, badge:'b-new', badgeText:'New' },
+      { icon:'📧', cover:'cv4', title:'Email Automation System Template', desc:'Full email marketing automation: welcome sequence, cart abandonment, re-engagement — ready to deploy.', price:59, badge:'', badgeText:'' }
+    ]
+  },
+  {
+    cat:'🎓 Mini Courses', items:[
+      { icon:'🎬', cover:'cv5', title:'ChatGPT in 3 Hours: Video Course', desc:'6 hours of HD video. Zero to ChatGPT expert. Includes certification and lifetime access.', price:97, badge:'b-best', badgeText:'Bestseller' },
+      { icon:'🚀', cover:'cv7', title:'AI Freelancing Launchpad (Video)', desc:'Step-by-step video course: Find clients, pitch AI services, close deals. Includes live call recordings.', price:127, badge:'b-hot', badgeText:'🔥 Hot' },
+      { icon:'📱', cover:'cv1', title:'Social Media AI Masterclass', desc:'How to run a full social media presence with AI. 4 hours of video + templates + prompt scripts.', price:67, badge:'b-new', badgeText:'New' }
+    ]
+  },
+  {
+    cat:'💼 Business Toolkits', items:[
+      { icon:'🏢', cover:'cv3', title:'AI Business Plan Generator Kit', desc:'Template system + prompts to generate a full investor-ready business plan in under 4 hours. Tested.', price:89, badge:'', badgeText:'' },
+      { icon:'📈', cover:'cv6', title:'Startup Pitch Deck AI System', desc:'10 pitch deck templates + AI prompts to fill each slide with compelling, investor-ready content.', price:69, badge:'b-new', badgeText:'New' },
+      { icon:'🎯', cover:'cv8', title:'Agency New Business Toolkit', desc:'Proposal templates, pricing calculators, case study formats, and AI prompts to win more clients.', price:99, badge:'b-best', badgeText:'Bestseller' }
+    ]
+  }
+];
 
-// ── PRODUCT FILTER ─────────────────────────────────────────────────────
-function filterProducts(cat, btn){
-  document.querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));
-  btn.classList.add('active');
-  document.querySelectorAll('.product-card').forEach(c=>{
-    if(cat==='all' || c.dataset.cat===cat) c.classList.remove('hidden');
-    else c.classList.add('hidden');
+// ══ STATE ═════════════════════════════════════════════════════════════════
+let cart = [];
+let currentBookId = null;
+let currentChapter = 0;
+
+// ══ PAGE NAVIGATION ═══════════════════════════════════════════════════════
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelectorAll('.nav-link[id^="nl-"]').forEach(l => l.classList.remove('active'));
+  const nl = document.getElementById('nl-' + id);
+  if (nl) nl.classList.add('active');
+  window.scrollTo(0, 0);
+  if (id === 'home') renderHomeFeatured();
+  if (id === 'store') renderStore();
+  if (id === 'products') renderDigitalProducts();
+  triggerReveal();
+}
+
+// ══ RENDER EBOOK GRID ════════════════════════════════════════════════════
+function bookCard(b, container) {
+  const d = document.createElement('div');
+  d.className = 'pcard';
+  d.dataset.cat = b.cat;
+  d.innerHTML = `
+    <div class="pcover ${b.cover}">
+      <div class="pcover-glow"></div>
+      <div class="pcover-icon">${b.icon}</div>
+      ${b.badgeText ? `<div class="pbadge ${b.badge}">${b.badgeText}</div>` : ''}
+    </div>
+    <div class="pbody">
+      <div class="pcat">${b.cat_label}</div>
+      <div class="pstars">${'★'.repeat(b.stars)}<span class="rcount">(${b.reviews.toLocaleString()})</span></div>
+      <div class="ptitle">${b.title}</div>
+      <div class="pdesc">${b.desc}</div>
+      <div class="pmeta">
+        <div class="pprice">$${b.price}${b.oldPrice ? `<span class="pold">$${b.oldPrice}</span>` : ''}</div>
+        <div style="display:flex;gap:.5rem">
+          <button class="pbtn" onclick="event.stopPropagation();openBook('${b.id}')">📖 Read</button>
+          <button class="pbtn" onclick="event.stopPropagation();addToCart('${b.id}')">🛒 Buy</button>
+        </div>
+      </div>
+    </div>`;
+  container.appendChild(d);
+}
+
+function renderHomeFeatured() {
+  const g = document.getElementById('home-featured');
+  g.innerHTML = '';
+  BOOKS.filter(b => b.featured).forEach(b => bookCard(b, g));
+}
+
+function renderStore() {
+  const g = document.getElementById('store-grid');
+  g.innerHTML = '';
+  BOOKS.forEach(b => bookCard(b, g));
+}
+
+function filterBooks(cat, btn) {
+  document.querySelectorAll('.ftab').forEach(t => t.classList.remove('on'));
+  btn.classList.add('on');
+  document.querySelectorAll('#store-grid .pcard').forEach(c => {
+    c.classList.toggle('hidden', cat !== 'all' && c.dataset.cat !== cat);
   });
 }
 
-// ── CART STATE ─────────────────────────────────────────────────────────
-let cart = [];
-function addToCart(name, price, icon, bg){
-  cart.push({ name, price:+price, icon, bg });
-  renderCart();
-  showToast('Added to cart!', name+' — $'+price);
-}
-function removeFromCart(i){
-  cart.splice(i,1);
-  renderCart();
-}
-function renderCart(){
-  const el = document.getElementById('cart-items');
-  const cnt = document.getElementById('cart-count');
-  const cntm = document.getElementById('cart-count-m');
-  const total = cart.reduce((s,i)=>s+i.price,0);
-  document.getElementById('cart-total').textContent = '$'+total;
-  document.getElementById('pay-amount').textContent = '$'+total;
-  cnt.textContent = cart.length;
-  if(cntm) cntm.textContent = cart.length;
-  if(!cart.length){
-    el.innerHTML = `<div class="cart-empty"><div class="cart-empty-icon">🛒</div><p>Your cart is empty.</p></div>`;
-    return;
-  }
-  el.innerHTML = cart.map((item,i)=>`
-    <div class="cart-item">
-      <div class="ci-icon ${item.bg}">${item.icon}</div>
-      <div>
-        <div class="ci-name">${item.name}</div>
-        <div class="ci-price">$${item.price}</div>
-      </div>
-      <button class="ci-remove" onclick="removeFromCart(${i})">✕</button>
-    </div>
-  `).join('');
+// ══ RENDER DIGITAL PRODUCTS ═══════════════════════════════════════════════
+function renderDigitalProducts() {
+  const c = document.getElementById('dp-content');
+  c.innerHTML = '';
+  DIGITAL_PRODUCTS.forEach(cat => {
+    const sec = document.createElement('div');
+    sec.className = 'cat-section reveal';
+    sec.innerHTML = `<div class="cat-title-row"><span class="cat-icon">${cat.cat.split(' ')[0]}</span><span class="cat-label">${cat.cat}</span><div class="cat-line"></div></div>`;
+    const grid = document.createElement('div');
+    grid.className = 'pgrid';
+    cat.items.forEach(item => {
+      const d = document.createElement('div');
+      d.className = 'pcard';
+      d.innerHTML = `
+        <div class="pcover ${item.cover}">
+          <div class="pcover-glow"></div>
+          <div class="pcover-icon">${item.icon}</div>
+          ${item.badgeText ? `<div class="pbadge ${item.badge}">${item.badgeText}</div>` : ''}
+        </div>
+        <div class="pbody">
+          <div class="ptitle">${item.title}</div>
+          <div class="pdesc">${item.desc}</div>
+          <div class="pmeta">
+            <div class="pprice">$${item.price}</div>
+            <button class="pbtn" onclick="addToCartDirect('${item.title}','${item.price}','${item.icon}','${item.cover}')">🛒 Add to Cart</button>
+          </div>
+        </div>`;
+      grid.appendChild(d);
+    });
+    sec.appendChild(grid);
+    c.appendChild(sec);
+  });
+  setTimeout(triggerReveal, 100);
 }
 
-function toggleCart(){
+// ══ EBOOK READER ═══════════════════════════════════════════════════════════
+function openBook(id) {
+  const book = BOOKS.find(b => b.id === id);
+  if (!book) return;
+  currentBookId = id;
+  currentChapter = 0;
+  document.getElementById('ebook-title-bar').textContent = book.title;
+  document.getElementById('ebook-meta-bar').textContent = `Free Preview: ${book.chapters.filter(c=>c.free).length} of ${book.chapters.length} chapters`;
+  document.getElementById('ebook-buy-btn').textContent = `🔒 Unlock for $${book.price}`;
+
+  // TOC
+  const toc = document.getElementById('toc-list');
+  toc.innerHTML = book.chapters.map((ch, i) => `
+    <button class="toc-ch ${i===0?'active':''}" onclick="showChapter(${i})" id="toc-${i}">
+      <span class="toc-ch-num">Chapter ${i+1} ${ch.free ? '🔓' : '🔒'}</span>
+      ${ch.title}
+    </button>`).join('');
+
+  renderChapter(book, 0);
+  showPage('ebook');
+}
+
+function renderChapter(book, idx) {
+  const ch = book.chapters[idx];
+  const body = document.getElementById('ebook-body');
+  const isPurchased = cart.some(i => i.id === book.id);
+
+  if (!ch.free && !isPurchased) {
+    body.innerHTML = `
+      <div class="ch-header">
+        <div class="ch-num">Chapter ${idx+1}</div>
+        <div class="ch-title">${ch.title}</div>
+        ${ch.subtitle ? `<div class="ch-sub">${ch.subtitle}</div>` : ''}
+      </div>
+      <div class="locked-overlay">
+        <div class="lock-blur">${book.chapters[0].body.substring(0,600)}...</div>
+        <div class="lock-gate">
+          <div class="lock-box">
+            <div class="lock-icon">🔒</div>
+            <div class="lock-title">This Chapter is Locked</div>
+            <div class="lock-sub">Purchase <strong>${book.title}</strong> to unlock all ${book.chapters.length} chapters, bonus templates, and lifetime updates.</div>
+            <button class="btn-cyan" style="border:none;width:100%;padding:.85rem;font-size:.95rem;font-weight:700;cursor:pointer" onclick="addToCart('${book.id}');openPayModal('${book.title}','${book.price}')">
+              🔓 Unlock for $${book.price}
+            </button>
+            <div style="font-size:.75rem;color:var(--muted);margin-top:.8rem">✅ 30-day money-back guarantee</div>
+          </div>
+        </div>
+      </div>`;
+  } else {
+    body.innerHTML = `
+      <div class="ch-header">
+        <div class="ch-num">Chapter ${idx+1}</div>
+        <div class="ch-title">${ch.title}</div>
+        ${ch.subtitle ? `<div class="ch-sub">${ch.subtitle}</div>` : ''}
+      </div>
+      <div class="ch-body">${ch.body}</div>
+      <div class="ch-nav">
+        ${idx > 0 ? `<button class="ch-nav-btn" onclick="showChapter(${idx-1})">← Chapter ${idx}</button>` : '<div></div>'}
+        ${idx < book.chapters.length-1 ? `<button class="ch-nav-btn" onclick="showChapter(${idx+1})">Chapter ${idx+2} →</button>` : '<div style="color:var(--cyan);font-size:.85rem;padding:.7rem 1.4rem">📖 End of preview — unlock all chapters!</div>'}
+      </div>`;
+  }
+  // update TOC active
+  document.querySelectorAll('.toc-ch').forEach((el, i) => el.classList.toggle('active', i === idx));
+  currentChapter = idx;
+  document.getElementById('ebook-body').scrollTop = 0;
+}
+
+function showChapter(idx) {
+  const book = BOOKS.find(b => b.id === currentBookId);
+  if (book) renderChapter(book, idx);
+}
+
+function buyCurrentBook() {
+  const book = BOOKS.find(b => b.id === currentBookId);
+  if (book) { addToCart(book.id); openPayModal(book.title, book.price); }
+}
+
+// ══ CART ══════════════════════════════════════════════════════════════════
+function addToCart(bookId) {
+  const book = BOOKS.find(b => b.id === bookId);
+  if (!book) return;
+  if (cart.some(i => i.id === bookId)) { showToast('Already in cart!', book.title); return; }
+  cart.push({ id: book.id, name: book.title, price: book.price, icon: book.icon, cover: book.cover });
+  updateCartUI();
+  showToast('Added to cart! 🛒', book.title + ' — $' + book.price);
+}
+
+function addToCartDirect(name, price, icon, cover) {
+  cart.push({ id: Math.random().toString(36).substr(2,6), name, price: +price, icon, cover });
+  updateCartUI();
+  showToast('Added to cart! 🛒', name + ' — $' + price);
+}
+
+function removeFromCart(idx) {
+  cart.splice(idx, 1);
+  updateCartUI();
+}
+
+function updateCartUI() {
+  const total = cart.reduce((s, i) => s + i.price, 0);
+  document.getElementById('cart-count').textContent = cart.length;
+  const m = document.getElementById('cart-count-m');
+  if (m) m.textContent = cart.length;
+  document.getElementById('cart-total-amt').textContent = '$' + total;
+  document.getElementById('pay-amount-label').textContent = '$' + total;
+
+  const el = document.getElementById('cart-items-list');
+  if (!cart.length) {
+    el.innerHTML = '<div class="cempty"><div class="cempty-icon">🛒</div><p>Cart is empty</p></div>';
+    return;
+  }
+  el.innerHTML = cart.map((item, i) => `
+    <div class="citem">
+      <div class="ci-thumb ${item.cover}">${item.icon}</div>
+      <div><div class="ci-name">${item.name}</div><div class="ci-price">$${item.price}</div></div>
+      <button class="ci-rm" onclick="removeFromCart(${i})">✕</button>
+    </div>`).join('');
+}
+
+function toggleCart() {
   document.getElementById('cart-overlay').classList.toggle('open');
   document.getElementById('cart-drawer').classList.toggle('open');
 }
 
-// ── PAYMENT MODAL ──────────────────────────────────────────────────────
-function openPaymentModal(name, price){
-  const total = cart.length ? cart.reduce((s,i)=>s+i.price,0) : +price;
-  document.getElementById('modal-product-name').textContent = name + ' — $' + total;
-  document.getElementById('pay-amount').textContent = '$'+total;
-  document.getElementById('payment-modal').classList.add('open');
+// ══ PAYMENT ═══════════════════════════════════════════════════════════════
+function openPayModal(name, price) {
+  const total = cart.length ? cart.reduce((s, i) => s + i.price, 0) : +price;
+  document.getElementById('m-product').textContent = name + ' — $' + total;
+  document.getElementById('pay-amount-label').textContent = '$' + total;
+  document.getElementById('pay-modal').classList.add('open');
   document.getElementById('cart-overlay').classList.remove('open');
   document.getElementById('cart-drawer').classList.remove('open');
 }
-function closePaymentModal(){
-  document.getElementById('payment-modal').classList.remove('open');
+
+function closePayModal() { document.getElementById('pay-modal').classList.remove('open'); }
+
+function selPay(btn) {
+  document.querySelectorAll('.pmethod').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
 }
 
-function selectPayMethod(btn, method){
-  document.querySelectorAll('.pay-method').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  if(method==='paypal'||method==='apple'||method==='google'){
-    document.getElementById('card-form').innerHTML = `
-      <div style="text-align:center;padding:2rem 0;color:var(--mist);font-size:.9rem">
-        <div style="font-size:2.5rem;margin-bottom:1rem">${method==='paypal'?'🅿️':method==='apple'?'🍎':'G'}</div>
-        You'll be redirected to ${method==='paypal'?'PayPal':method==='apple'?'Apple Pay':'Google Pay'} to complete your purchase securely.
-        <button class="btn-pay" style="margin-top:1.5rem" onclick="processPayment(this)">
-          Continue to ${method==='paypal'?'PayPal':method==='apple'?'Apple Pay':'Google Pay'} →
-        </button>
-      </div>`;
-  } else {
-    document.getElementById('card-form').innerHTML = `
-      <div class="form-group"><label class="form-label">Full Name</label><input type="text" class="form-input" placeholder="Muhammad Ali Khan"></div>
-      <div class="form-group"><label class="form-label">Email Address</label><input type="email" class="form-input" placeholder="you@email.com"></div>
-      <div class="form-group"><label class="form-label">Card Number</label><input type="text" class="form-input" placeholder="4242 4242 4242 4242" maxlength="19" oninput="formatCard(this)"></div>
-      <div class="form-row">
-        <div class="form-group"><label class="form-label">Expiry</label><input type="text" class="form-input" placeholder="MM / YY" maxlength="7" oninput="formatExpiry(this)"></div>
-        <div class="form-group"><label class="form-label">CVC</label><input type="text" class="form-input" placeholder="•••" maxlength="4"></div>
-      </div>
-      <button class="btn-pay" onclick="processPayment(this)">🔒 Pay <span id="pay-amount">$0</span> Securely</button>`;
-    document.getElementById('pay-amount').textContent = document.getElementById('cart-total').textContent;
-  }
-}
+function fmtCard(inp) { let v = inp.value.replace(/\D/g,'').substring(0,16); inp.value = v.replace(/(.{4})/g,'$1 ').trim(); }
+function fmtExp(inp) { let v = inp.value.replace(/\D/g,''); if (v.length>=3) v=v.substring(0,2)+' / '+v.substring(2,4); inp.value=v; }
 
-function formatCard(inp){
-  let v = inp.value.replace(/\D/g,'').substring(0,16);
-  inp.value = v.replace(/(.{4})/g,'$1 ').trim();
-}
-function formatExpiry(inp){
-  let v = inp.value.replace(/\D/g,'');
-  if(v.length>=3) v = v.substring(0,2)+' / '+v.substring(2,4);
-  inp.value=v;
-}
-
-function processPayment(btn){
-  btn.textContent = '⏳ Processing...';
+function processPay(btn) {
+  btn.textContent = '⏳ Processing securely...';
   btn.disabled = true;
-  setTimeout(()=>{
-    closePaymentModal();
-    cart=[];
-    renderCart();
-    showToast('Purchase Successful! 🎉','Check your email for the download link.');
+  setTimeout(() => {
+    closePayModal();
+    // Mark purchased books as unlocked
+    if (currentBookId) {
+      const book = BOOKS.find(b => b.id === currentBookId);
+      if (book && !cart.some(i => i.id === currentBookId)) {
+        cart.push({ id: book.id, name: book.title, price: book.price, icon: book.icon, cover: book.cover });
+      }
+    }
+    showToast('Purchase Successful! 🎉', 'Check your email for download link.');
     btn.textContent = '🔒 Pay Securely';
     btn.disabled = false;
-  },2200);
+    // Refresh current ebook if open
+    if (currentBookId) { const book = BOOKS.find(b=>b.id===currentBookId); if(book) renderChapter(book, currentChapter); }
+  }, 2000);
 }
 
-// ── TOAST ──────────────────────────────────────────────────────────────
-function showToast(title, body){
-  const t=document.getElementById('toast');
-  document.getElementById('toast-title').textContent=title;
-  document.getElementById('toast-body').textContent=body;
+// ══ TOAST ════════════════════════════════════════════════════════════════
+function showToast(title, body) {
+  document.getElementById('t-title').textContent = title;
+  document.getElementById('t-body').textContent = body;
+  const t = document.getElementById('toast');
   t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),3500);
+  setTimeout(() => t.classList.remove('show'), 3500);
 }
 
-// ── FAQ ────────────────────────────────────────────────────────────────
-function toggleFaq(btn){
-  const item=btn.parentElement;
-  const ans=item.querySelector('.faq-a');
-  const inner=item.querySelector('.faq-a-inner');
-  if(item.classList.contains('open')){
-    ans.style.height='0';
-    item.classList.remove('open');
-  } else {
-    document.querySelectorAll('.faq-item.open').forEach(i=>{
-      i.querySelector('.faq-a').style.height='0';
-      i.classList.remove('open');
-    });
-    item.classList.add('open');
-    ans.style.height=inner.offsetHeight+'px';
-  }
+function sendContact() { showToast('Message Sent! ✅', "We'll reply within 24 hours."); }
+
+// ══ CURSOR ═══════════════════════════════════════════════════════════════
+let mx=0,my=0,rx=0,ry=0;
+const cur=document.getElementById('cur'), cur2=document.getElementById('cur2');
+document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
+(function anim(){ rx+=(mx-rx)*.15; ry+=(my-ry)*.15; cur.style.left=mx+'px'; cur.style.top=my+'px'; cur2.style.left=rx+'px'; cur2.style.top=ry+'px'; requestAnimationFrame(anim); })();
+
+// ══ PROGRESS BAR ═════════════════════════════════════════════════════════
+window.addEventListener('scroll', () => { const p=(window.scrollY/(document.body.scrollHeight-window.innerHeight))*100; document.getElementById('prog').style.width=p+'%'; });
+
+// ══ COUNTERS ══════════════════════════════════════════════════════════════
+let counted=false;
+function runCounters() {
+  if(counted) return; counted=true;
+  document.querySelectorAll('[data-t]').forEach(el => {
+    const target=+el.dataset.t, start=performance.now();
+    (function tick(now){
+      const p=Math.min((now-start)/2000,1);
+      el.textContent=Math.round(p*target).toLocaleString();
+      if(p<1) requestAnimationFrame(tick);
+    })(start);
+  });
 }
 
-// ── FEATURE ITEM STAGGER ───────────────────────────────────────────────
-document.querySelectorAll('.feature-item').forEach((el,i)=>{
-  el.style.transitionDelay=i*.08+'s';
-});
+// ══ SCROLL REVEAL ════════════════════════════════════════════════════════
+function triggerReveal() {
+  setTimeout(()=>{
+    const obs=new IntersectionObserver(entries=>{
+      entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('vis'); if(e.target.closest('#page-home')) runCounters(); }});
+    },{threshold:.1});
+    document.querySelectorAll('.reveal:not(.vis)').forEach(el=>obs.observe(el));
+    document.querySelectorAll('.pcard').forEach((el,i)=>{ el.style.opacity='0'; el.style.transform='translateY(20px)'; el.style.transition=`opacity .5s ${i*.07}s var(--ease), transform .5s ${i*.07}s var(--ease)`; setTimeout(()=>{ el.style.opacity='1'; el.style.transform='none'; },100+i*70); });
+  },50);
+}
 
-// ── STAGGER PRODUCT CARDS ──────────────────────────────────────────────
-document.querySelectorAll('.product-card').forEach((el,i)=>{
-  el.style.transitionDelay=i*.07+'s';
-});
+// ══ MOBILE NAV ═══════════════════════════════════════════════════════════
+function toggleMobileNav() {
+  const m=document.getElementById('mob-nav');
+  const mc=document.getElementById('mob-cart');
+  const isOpen=m.style.display==='block';
+  m.style.display=isOpen?'none':'block';
+  if(mc) mc.style.display=isOpen?'none':'flex';
+}
+function closeMobileNav() { document.getElementById('mob-nav').style.display='none'; }
+
+// Check screen for mobile cart button
+function checkMobile(){ if(window.innerWidth<=900){ document.getElementById('mob-cart').style.display='flex'; } }
+window.addEventListener('resize',checkMobile); checkMobile();
+
+// ══ INIT ══════════════════════════════════════════════════════════════════
+renderHomeFeatured();
+triggerReveal();
+setTimeout(runCounters, 500);
 </script>
 </body>
 </html>
